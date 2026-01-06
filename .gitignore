@@ -1,0 +1,5 @@
+Porto/db/*
+**/db/data/
+db/*
+.env
+*.log
