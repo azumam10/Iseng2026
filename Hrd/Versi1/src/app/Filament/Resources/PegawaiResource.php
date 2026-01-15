@@ -13,12 +13,16 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+// Import untuk fitur Export/Import
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
+use App\Filament\Exports\PegawaiExporter;
+use App\Filament\Imports\PegawaiImporter;
 
 class PegawaiResource extends Resource
 {
     protected static ?string $model = Pegawai::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-users'; // Ikon user group
+    protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationLabel = 'Data Pegawai';
     protected static ?string $navigationGroup = 'Manajemen HR';
     protected static ?int $navigationSort = 1;
@@ -27,14 +31,17 @@ class PegawaiResource extends Resource
     {
         return $form
             ->schema([
-                // --- SECTION 1: IDENTITAS UTAMA & FOTO ---
+                // --- SECTION 1: IDENTITAS UTAMA ---
                 Section::make('Identitas Utama')
                     ->description('Informasi dasar dan foto profil pegawai.')
                     ->schema([
                         Forms\Components\FileUpload::make('foto')
-                            ->avatar() // Tampilan bulat
+                            ->avatar()
                             ->image()
-                            ->directory('pegawai-fotos') // Folder penyimpanan
+                            ->imageEditor()
+                            ->circleCropper()
+                            ->directory('pegawai-fotos')
+                            ->maxSize(1024)
                             ->columnSpanFull()
                             ->alignCenter(),
 
@@ -42,8 +49,9 @@ class PegawaiResource extends Resource
                             Forms\Components\TextInput::make('nip')
                                 ->label('NIP')
                                 ->required()
-                                ->unique(ignoreRecord: true) 
-                                ->maxLength(255),
+                                ->numeric()
+                                ->unique(ignoreRecord: true)
+                                ->maxLength(20),
 
                             Forms\Components\TextInput::make('nama_lengkap')
                                 ->label('Nama Lengkap')
@@ -55,11 +63,12 @@ class PegawaiResource extends Resource
                                     'pria' => 'Pria',
                                     'perempuan' => 'Perempuan',
                                 ])
+                                ->native(false)
                                 ->required(),
 
                             Forms\Components\DatePicker::make('tanggal_lahir')
                                 ->required()
-                                ->native(false) // Menggunakan widget kalender JS
+                                ->native(false)
                                 ->displayFormat('d/m/Y'),
                                 
                             Forms\Components\Select::make('generasi')
@@ -76,17 +85,18 @@ class PegawaiResource extends Resource
 
                 // --- SECTION 2: KONTAK & ALAMAT ---
                 Section::make('Kontak & Alamat')
-                    ->collapsible() // Bisa di-minimize
+                    ->collapsible()
                     ->schema([
                         Grid::make(2)->schema([
                             Forms\Components\TextInput::make('email')
                                 ->email()
                                 ->unique(ignoreRecord: true)
-                                ->maxLength(255),
+                                ->required(),
 
                             Forms\Components\TextInput::make('no_hp')
                                 ->label('No. HP')
                                 ->tel()
+                                ->mask('0899-9999-99999') // Contoh mask input
                                 ->maxLength(20),
                         ]),
                         Forms\Components\Textarea::make('alamat')
@@ -94,29 +104,30 @@ class PegawaiResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                // --- SECTION 3: PEKERJAAN & POSISI ---
+                // --- SECTION 3: PEKERJAAN ---
                 Section::make('Informasi Pekerjaan')
                     ->schema([
-                        Grid::make(2)->schema([
-                            // Pastikan Model Departemen memiliki kolom 'nama'
+                        Grid::make(3)->schema([
                             Forms\Components\Select::make('departemen_id')
                                 ->relationship('departemen', 'nama')
+                                ->live() // Agar jabatan bisa memfilter berdasarkan ini
+                                ->afterStateUpdated(fn (Forms\Set $set) => $set('jabatan_id', null))
                                 ->searchable()
                                 ->preload()
-                                ->createOptionForm([
-                                    Forms\Components\TextInput::make('nama')->required(),
-                                ]),
+                                ->required(),
 
-                            // Pastikan Model Jabatan memiliki kolom 'nama'
                             Forms\Components\Select::make('jabatan_id')
-                                ->relationship('jabatan', 'nama')
+                                ->relationship(
+                                    name: 'jabatan', 
+                                    titleAttribute: 'nama',
+                                    modifyQueryUsing: fn (Builder $query, Forms\Get $get) => 
+                                        $query->where('departemen_id', $get('departemen_id'))
+                                )
                                 ->searchable()
-                                ->preload(),
+                                ->preload()
+                                ->disabled(fn (Forms\Get $get) => ! $get('departemen_id'))
+                                ->required(),
 
-                            Forms\Components\DatePicker::make('tanggal_masuk')
-                                ->label('Tanggal Masuk')
-                                ->displayFormat('d/m/Y'),
-                            
                             Forms\Components\Select::make('status')
                                 ->options([
                                     'aktif' => 'Aktif',
@@ -127,6 +138,13 @@ class PegawaiResource extends Resource
                                 ])
                                 ->default('aktif')
                                 ->required(),
+                        ]),
+                        
+                        Grid::make(2)->schema([
+                            Forms\Components\DatePicker::make('tanggal_masuk')
+                                ->label('Tanggal Masuk')
+                                ->native(false)
+                                ->displayFormat('d/m/Y'),
 
                             Forms\Components\Select::make('pendidikan')
                                 ->options([
@@ -138,69 +156,41 @@ class PegawaiResource extends Resource
                                 ]),
                         ]),
                     ]),
-
-                // --- SECTION 4: KINERJA & FILE PENDUKUNG ---
-                Section::make('Kinerja & Dokumen')
-                    ->columns(2)
-                    ->collapsed() // Default tertutup agar form tidak terlalu panjang
-                    ->schema([
-                        Forms\Components\Group::make()
-                            ->schema([
-                                Forms\Components\TextInput::make('kinerja_score')
-                                    ->label('Skor Kinerja')
-                                    ->numeric()
-                                    ->step(0.01)
-                                    ->maxValue(100),
-                                
-                                Forms\Components\Select::make('kinerja')
-                                    ->options([
-                                        'low' => 'Low',
-                                        'medium' => 'Medium',
-                                        'high' => 'High',
-                                    ]),
-                            ]),
-                        
-                        Forms\Components\Group::make()
-                            ->schema([
-                                Forms\Components\TextInput::make('npwp')
-                                    ->label('NPWP'),
-                                    
-                                Forms\Components\FileUpload::make('ktp')
-                                    ->label('Foto KTP')
-                                    ->image()
-                                    ->directory('pegawai-ktp')
-                                    ->visibility('private'), // Agar aman
-                                    
-                                Forms\Components\DatePicker::make('tanggal_keluar')
-                                    ->label('Tanggal Resign/Keluar'),
-                            ]),
-                    ]),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            // Fitur Header Actions untuk Import & Export
+            ->headerActions([
+                ExportAction::make()
+                    ->exporter(PegawaiExporter::class)
+                    ->label('Export Data')
+                    ->columnMapping(false),
+                ImportAction::make()
+                    ->importer(PegawaiImporter::class)
+                    ->label('Import Data'),
+            ])
             ->columns([
                 Tables\Columns\ImageColumn::make('foto')
-                    ->circular()
-                    ->defaultImageUrl(url('/images/default-avatar.png')), // Opsional jika foto kosong
+                    ->circular(),
 
                 Tables\Columns\TextColumn::make('nip')
                     ->label('NIP')
                     ->searchable()
                     ->sortable()
-                    ->copyable(), // Bisa dikopi user
+                    ->copyable(),
 
                 Tables\Columns\TextColumn::make('nama_lengkap')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold')
                     ->description(fn (Pegawai $record): string => $record->jabatan?->nama ?? '-'),
 
                 Tables\Columns\TextColumn::make('departemen.nama')
-                    ->sortable()
-                    ->toggleable(), // User bisa hide/show kolom ini
+                    ->badge()
+                    ->color('gray')
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
@@ -211,54 +201,27 @@ class PegawaiResource extends Resource
                         default => 'gray',
                     }),
 
-                Tables\Columns\TextColumn::make('kinerja')
-                    ->badge()
-                    ->colors([
-                        'danger' => 'low',
-                        'warning' => 'medium',
-                        'success' => 'high',
-                    ])
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('no_hp')
-                    ->label('No. HP')
-                    ->toggleable(isToggledHiddenByDefault: true),
-
                 Tables\Columns\TextColumn::make('tanggal_masuk')
+                    ->label('Masa Kerja')
                     ->date('d M Y')
-                    ->sortable(),
+                    ->description(fn (Pegawai $record): string => $record->tanggal_masuk?->diffForHumans() ?? '-'),
             ])
             ->filters([
-                // Filter berdasarkan Status
+                Tables\Filters\SelectFilter::make('departemen')
+                    ->relationship('departemen', 'nama'),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'aktif' => 'Aktif',
-                        'cuti' => 'Cuti',
-                        'sakit' => 'Sakit',
                         'resign' => 'Resign',
-                        'pensiun' => 'Pensiun',
                     ]),
-
-                // Filter berdasarkan Departemen
-                Tables\Filters\SelectFilter::make('departemen')
-                    ->relationship('departemen', 'nama'),
-
-                // Filter berdasarkan Gender
-                Tables\Filters\SelectFilter::make('gender')
-                    ->options([
-                        'pria' => 'Pria',
-                        'perempuan' => 'Perempuan',
-                    ]),
-
-                // Filter Data yang dihapus (Soft Deletes)
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(), // Soft delete
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ActionGroup::make([ // Dikelompokkan agar rapi
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -267,14 +230,6 @@ class PegawaiResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            // Bisa ditambahkan RelationManager di sini jika perlu
-            // Contoh: RiwayatGajiRelationManager::class
-        ];
     }
 
     public static function getPages(): array
