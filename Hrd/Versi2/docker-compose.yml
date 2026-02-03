@@ -1,0 +1,49 @@
+# docker-compose.yml - Versi Minimalis
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: employee-app
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - employee-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./nginx/site.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - employee-network
+
+  db:
+    image: mysql:8.0
+    container_name: employee-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: employee_db
+      MYSQL_USER: employee_user
+      MYSQL_PASSWORD: employee_pass
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - employee-network
+
+networks:
+  employee-network:
+    driver: bridge
+
+volumes:
+  db_data:
