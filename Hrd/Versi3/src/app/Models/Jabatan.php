@@ -17,9 +17,9 @@ class Jabatan extends Model
         'deskripsi',
     ];
 
-    public function department()
+    public function departement()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Departement::class);
     }
 
     public function karyawans()
