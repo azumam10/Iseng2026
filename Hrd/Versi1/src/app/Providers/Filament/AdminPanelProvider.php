@@ -17,6 +17,9 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Filament\Auth\CustomLogin;
+use Livewire\Livewire;
+use Illuminate\Support\HtmlString;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -26,10 +29,30 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(CustomLogin::class)
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#0D9488', // Teal Medical
             ])
+            ->brandLogo(asset('images/3K.png'))
+            ->renderHook(
+            'panels::head.end',
+            fn () => new HtmlString("
+                <style>
+                    /* Menargetkan gambar logo di header halaman login */
+                    .fi-simple-header img {
+                        border-radius: 50% !important; /* Membuat sudut jadi bulat */
+                        width: 100px !important;       /* Lebar paksa */
+                        height: 100px !important;      /* Tinggi paksa (harus sama dengan lebar biar bulat) */
+                        object-fit: cover !important;  /* Agar gambar tidak gepeng kalau aslinya bukan persegi */
+                        
+                        /* Opsional: Tambahkan border tipis biar makin tegas */
+                        border: 3px solid #0D9488 !important; 
+                        padding: 2px !important;
+                        background-color: white !important;
+                    }
+                </style>
+            ")
+        )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -54,5 +77,10 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+    public function boot(): void
+    {
+        // Daftarkan komponen secara manual agar terbaca oleh Livewire
+        Livewire::component('app.filament.auth.custom-login', CustomLogin::class);
     }
 }
