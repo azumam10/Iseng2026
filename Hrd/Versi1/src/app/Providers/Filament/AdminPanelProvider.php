@@ -43,12 +43,7 @@ class AdminPanelProvider extends PanelProvider
                         border-radius: 50% !important; /* Membuat sudut jadi bulat */
                         width: 100px !important;       /* Lebar paksa */
                         height: 100px !important;      /* Tinggi paksa (harus sama dengan lebar biar bulat) */
-                        object-fit: cover !important;  /* Agar gambar tidak gepeng kalau aslinya bukan persegi */
-                        
-                        /* Opsional: Tambahkan border tipis biar makin tegas */
-                        border: 3px solid #0D9488 !important; 
-                        padding: 2px !important;
-                        background-color: white !important;
+                        // object-fit: cover !important;  /* Agar gambar tidak gepeng kalau aslinya bukan persegi */
                     }
                 </style>
             ")

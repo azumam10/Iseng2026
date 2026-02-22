@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DepartemenSeeder::class,
             JabatanSeeder::class,
+            LeaveTypeSeeder::class,
         ]);
     }
 }
