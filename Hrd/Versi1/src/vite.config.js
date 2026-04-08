@@ -1,18 +1,24 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+
+                // ← WAJIB ada di sini agar Vite tahu file ini perlu di-build
+                'resources/css/filament/admin/theme.css',
+            ],
             refresh: true,
         }),
-        tailwindcss(),
     ],
-    server: {
-        watch: {
-            ignored: ['**/storage/framework/views/**'],
+
+    // Vite 7 + @tailwindcss/vite kadang butuh resolve alias
+    resolve: {
+        alias: {
+            // Tidak perlu vendor alias — theme.css kita sudah standalone
         },
     },
 });

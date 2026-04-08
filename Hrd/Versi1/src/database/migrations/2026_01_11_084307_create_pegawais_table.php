@@ -24,16 +24,24 @@ return new class extends Migration
             $table->date('tanggal_masuk')->nullable();
             $table->date('tanggal_keluar')->nullable();  // untuk resign
             $table->enum('pendidikan', ['SMA','D3','S1','S2','S3'])->nullable();
-            $table->enum('status', ['aktif', 'cuti', 'sakit', 'resign', 'pensiun'])->default('aktif');
-            $table->double('kinerja_score',5,2)->nullable();  // skor kinerja karyawan
+            $table->string('status')->default('aktif');
+            $table->decimal('kinerja_score',5,2)->nullable();  // skor kinerja karyawan
             $table->enum('kinerja', ['low', 'medium', 'high'])->nullable();
             $table->string('foto')->nullable();  // path foto pegawai
             $table->string('ktp')->nullable();   // path file KTP
             $table->string('npwp')->nullable();
+            $table->string('gdrive_folder_link')->nullable();
             
             // Relasi
-            $table->foreignId('departemen_id')->nullable()->constrained();
-            $table->foreignId('jabatan_id')->nullable()->constrained();
+            $table->foreignId('departemen_id')
+            ->nullable()
+            ->constrained()
+            ->nullOnDelete();
+            
+            $table->foreignId('jabatan_id')
+            ->nullable()
+            ->constrained()
+            ->nullOnDelete();
 
             
             $table->softDeletes();  // Hapus soft untuk resign (tidak benar-benar hapus data)

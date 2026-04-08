@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             DepartemenSeeder::class,
             JabatanSeeder::class,
             LeaveTypeSeeder::class,
+            RolePremissionSeeder::class,
         ]);
     }
 }

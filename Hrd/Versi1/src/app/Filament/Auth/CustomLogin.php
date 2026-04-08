@@ -3,38 +3,54 @@
 namespace App\Filament\Auth;
 
 use Filament\Pages\Auth\Login;
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Contracts\Support\Htmlable;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Form;
 
 class CustomLogin extends Login
 {
-    // 1. Mengubah Judul Halaman
-    public function getHeading(): string | Htmlable
+    // ── Judul halaman login ──────────────────────────────────
+    protected static string $view = 'filament-panels::pages.auth.login';
+
+    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
     {
-        return 'Portal PT Sankei Medical Industries';
+        return 'Selamat Datang';
     }
 
-    // 2. Menambah Sub-judul (pesan selamat datang)
-    public function getSubheading(): string | Htmlable | null
+    public function getHeading(): string|\Illuminate\Contracts\Support\Htmlable
     {
-        return 'Silakan login';
+        return 'Masuk ke HRIS';
     }
 
-    // 3. (Opsional) Mengubah field Email jadi "NIP" atau lainnya jika perlu
-    // Jika tidak ingin diubah, hapus function form() ini.
-    protected function getForms(): array
+    public function getSubheading(): string|\Illuminate\Contracts\Support\Htmlable|null
     {
-        return [
-            'form' => $this->form(
-                $this->makeForm()
-                    ->schema([
-                        $this->getEmailFormComponent(), 
-                        $this->getPasswordFormComponent(),
-                        $this->getRememberFormComponent(),
-                    ])
-                    ->statePath('data'),
-            ),
-        ];
+        return 'Masukkan kredensial Anda untuk melanjutkan';
+    }
+
+    // ── Kustomisasi form login ────────────────────────────────
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                TextInput::make('email')
+                    ->label('Alamat Email')
+                    ->email()
+                    ->required()
+                    ->autocomplete()
+                    ->autofocus()
+                    ->extraInputAttributes(['class' => 'hris-input'])
+                    ->placeholder('nama@perusahaan.com'),
+
+                TextInput::make('password')
+                    ->label('Kata Sandi')
+                    ->password()
+                    ->required()
+                    ->revealable()
+                    ->placeholder('••••••••'),
+
+                Checkbox::make('remember')
+                    ->label('Ingat saya'),
+            ])
+            ->statePath('data');
     }
 }

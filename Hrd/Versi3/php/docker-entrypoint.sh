@@ -1,59 +1,85 @@
 #!/bin/bash
+set -e
 
-# Destination of env file inside container
 ENV_FILE="/var/www/.env"
 
-# Loop through XDEBUG, PHP_IDE_CONFIG and REMOTE_HOST variables and check if they are set.
-# If they are not set then check if we have values for them in the env file, if the env file exists. If we have values
-# in the env file then add exports for these in in the ~./bashrc file.
-for VAR in XDEBUG PHP_IDE_CONFIG REMOTE_HOST
-do
-  if [ -z "${!VAR}" ] && [ -f "${ENV_FILE}" ]; then
-    VALUE=$(grep $VAR $ENV_FILE | cut -d '=' -f 2-)
-    if [ ! -z "${VALUE}" ]; then
-      # Before adding the export we clear the value, if set, to prevent duplication.
-      sed -i "/$VAR/d"  ~/.bashrc
-      echo "export $VAR=$VALUE" >> ~/.bashrc;
-    fi
-  fi
-done
+log() {
+    echo "[entrypoint] $1"
+}
 
-# Source the .bashrc file so that the exported variables are available.
-. ~/.bashrc
-
-# If there is still no value for the REMOTE_HOST variable then we set it to the default of host.docker.internal. This
-# value will be sufficient for windows and mac environments.
-if [ -z "${REMOTE_HOST}" ]; then
-  REMOTE_HOST="host.docker.internal"
-  sed -i "/REMOTE_HOST/d"  ~/.bashrc
-  echo "export REMOTE_HOST=\"$REMOTE_HOST\"" >> ~/.bashrc;
-  . ~/.bashrc
+# Load env vars from .env file if they aren't already set
+if [ -f "${ENV_FILE}" ]; then
+    for VAR in XDEBUG PHP_IDE_CONFIG REMOTE_HOST; do
+        if [ -z "${!VAR}" ]; then
+            VALUE=$(grep -E "^${VAR}=" "${ENV_FILE}" | cut -d '=' -f 2- | tr -d '"' | tr -d "'")
+            if [ -n "${VALUE}" ]; then
+                export "$VAR=$VALUE"
+                log "Loaded $VAR from .env"
+            fi
+        fi
+    done
 fi
 
-# Start the cron service.
+# Default REMOTE_HOST
+if [ -z "${REMOTE_HOST}" ]; then
+    REMOTE_HOST="host.docker.internal"
+    export REMOTE_HOST
+    log "REMOTE_HOST defaulted to host.docker.internal"
+fi
+
+# Start cron service
+log "Starting cron service..."
 service cron start
 
-# Toggle xdebug
-if [ "true" == "$XDEBUG" ] && [ ! -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ]; then
-  # Remove PHP_IDE_CONFIG from cron file so we do not duplicate it when adding below
-  sed -i '/PHP_IDE_CONFIG/d' /etc/cron.d/laravel-scheduler
-  if [ ! -z "${PHP_IDE_CONFIG}" ]; then
-    # Add PHP_IDE_CONFIG to cron file. Cron by default does not load enviromental variables. The server name, set here, is
-    # used by PHPSTORM for path mappings
-    echo -e "PHP_IDE_CONFIG=\"$PHP_IDE_CONFIG\"\n$(cat /etc/cron.d/laravel-scheduler)" > /etc/cron.d/laravel-scheduler
-  fi
-  # Enable xdebug estension and set up the docker-php-ext-xdebug.ini file with the required xdebug settings
-  docker-php-ext-enable xdebug && \
-  echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini; \
-  echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini; \
-  echo "xdebug.remote_connect_back=0" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini; \
-  echo "xdebug.remote_host=$REMOTE_HOST" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini;
+# XDebug toggle
+XDEBUG_INI="/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini"
 
-elif [ -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ]; then
-  # Remove PHP_IDE_CONFIG from cron file if already added
-  sed -i '/PHP_IDE_CONFIG/d' /etc/cron.d/laravel-scheduler
-  # Remove Xdebug config file disabling xdebug
-  rm -rf /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+if [ "${XDEBUG}" = "true" ]; then
+    log "Enabling XDebug..."
+    if [ ! -f "${XDEBUG_INI}" ]; then
+        # Remove & re-add PHP_IDE_CONFIG to cron to avoid duplication
+        sed -i '/PHP_IDE_CONFIG/d' /etc/cron.d/laravel-scheduler
+        if [ -n "${PHP_IDE_CONFIG}" ]; then
+            echo -e "PHP_IDE_CONFIG=\"${PHP_IDE_CONFIG}\"\n$(cat /etc/cron.d/laravel-scheduler)" \
+                > /etc/cron.d/laravel-scheduler
+        fi
+
+        docker-php-ext-enable xdebug
+        {
+            echo "xdebug.mode=debug,develop"
+            echo "xdebug.start_with_request=yes"
+            echo "xdebug.client_host=${REMOTE_HOST}"
+            echo "xdebug.client_port=9003"
+            echo "xdebug.log=/var/log/xdebug.log"
+            echo "xdebug.idekey=VSCODE"
+        } > "${XDEBUG_INI}"
+        log "XDebug enabled with host=${REMOTE_HOST}"
+    fi
+else
+    if [ -f "${XDEBUG_INI}" ]; then
+        log "Disabling XDebug..."
+        sed -i '/PHP_IDE_CONFIG/d' /etc/cron.d/laravel-scheduler
+        rm -f "${XDEBUG_INI}"
+        log "XDebug disabled"
+    fi
 fi
 
+# Wait for DB to be ready (if DB_HOST is set)
+if [ -n "${DB_HOST}" ]; then
+    log "Waiting for database at ${DB_HOST}:${DB_PORT:-3306}..."
+    MAX_RETRIES=30
+    COUNT=0
+    until php -r "new PDO('mysql:host=${DB_HOST};port=${DB_PORT:-3306};dbname=${DB_DATABASE}', '${DB_USERNAME}', '${DB_PASSWORD}');" 2>/dev/null; do
+        COUNT=$((COUNT+1))
+        if [ $COUNT -ge $MAX_RETRIES ]; then
+            log "ERROR: Database not available after ${MAX_RETRIES} retries. Exiting."
+            exit 1
+        fi
+        log "DB not ready, retry $COUNT/$MAX_RETRIES..."
+        sleep 2
+    done
+    log "Database is ready!"
+fi
+
+log "Starting PHP-FPM..."
 exec "$@"

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('gaji_pokok_min', 15, 2)->nullable();
             $table->decimal('gaji_pokok_max', 15, 2)->nullable();
             $table->text('deskripsi')->nullable();
+            $table->foreignId('departemen_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
             });
     }

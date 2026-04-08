@@ -1,0 +1,496 @@
+/* ============================================================
+   HRIS TOOL — Filament v3 Custom Theme
+   Palet: Mint Cream | Ice Blue | Aquamarine | Bright Cyan
+   CATATAN: Tidak menggunakan @import vendor (tidak kompatibel Vite 7)
+   Semua override ditulis langsung di sini.
+   ============================================================ */
+
+/* ---------- Google Font ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+/* ---------- CSS Variables ---------- */
+:root {
+    --hris-mint-bg:      #f0fafa;
+    --hris-mint-100:     #e0f5f2;
+    --hris-mint-200:     #ccf5f0;
+    --hris-border:       #c8eee9;
+    --hris-border-light: #e0f5f2;
+    --hris-aqua:         #5eead4;
+    --hris-cyan-light:   #22d3ee;
+    --hris-cyan:         #06b6d4;
+    --hris-teal:         #0e7490;
+    --hris-teal-dark:    #0c4a6e;
+    --hris-text-main:    #1a3a3a;
+    --hris-text-muted:   #6aabab;
+    --hris-text-subtle:  #94c9c9;
+
+    /* Override Filament primary color tokens */
+    --fi-primary-50:  240 250 250;
+    --fi-primary-100: 224 245 242;
+    --fi-primary-200: 204 245 240;
+    --fi-primary-300: 94 234 212;
+    --fi-primary-400: 34 211 238;
+    --fi-primary-500: 6 182 212;
+    --fi-primary-600: 8 145 178;
+    --fi-primary-700: 14 116 144;
+    --fi-primary-800: 21 94 117;
+    --fi-primary-900: 12 74 110;
+    --fi-primary-950: 8 51 83;
+}
+
+/* ============================================================
+   1. FONT & BODY
+   ============================================================ */
+body,
+html,
+.fi-body {
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important;
+}
+
+/* ============================================================
+   2. BACKGROUND UTAMA
+   ============================================================ */
+.fi-main,
+.fi-main-ctn,
+.fi-body {
+    background-color: var(--hris-mint-bg) !important;
+}
+
+/* ============================================================
+   3. SIDEBAR
+   ============================================================ */
+.fi-sidebar {
+    background-color: #ffffff !important;
+    border-right: 1px solid var(--hris-border) !important;
+}
+
+.fi-sidebar-header {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid var(--hris-border-light) !important;
+}
+
+/* Logo */
+.fi-logo img {
+    border-radius: 50% !important;
+    width: 42px !important;
+    height: 42px !important;
+    object-fit: cover !important;
+    border: 2px solid var(--hris-border) !important;
+}
+
+/* Nav group label */
+.fi-sidebar-nav-group-label {
+    color: var(--hris-text-subtle) !important;
+    font-size: 0.65rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+}
+
+/* Nav item default */
+.fi-sidebar-item-button {
+    border-radius: 10px !important;
+    color: var(--hris-text-muted) !important;
+    font-size: 0.875rem !important;
+    margin: 1px 6px !important;
+    transition: background 0.15s, color 0.15s !important;
+}
+
+.fi-sidebar-item-button:hover {
+    background-color: var(--hris-mint-100) !important;
+    color: var(--hris-teal) !important;
+}
+
+/* Nav item aktif */
+.fi-sidebar-item-button.fi-active,
+.fi-sidebar-item-button[aria-current="page"] {
+    background-color: var(--hris-mint-200) !important;
+    color: var(--hris-teal) !important;
+    font-weight: 500 !important;
+}
+
+.fi-sidebar-item-button.fi-active svg,
+.fi-sidebar-item-button[aria-current="page"] svg {
+    color: var(--hris-cyan) !important;
+}
+
+/* Sidebar footer */
+.fi-sidebar-footer {
+    border-top: 1px solid var(--hris-border-light) !important;
+    background-color: #ffffff !important;
+}
+
+/* ============================================================
+   4. TOPBAR
+   ============================================================ */
+.fi-topbar,
+.fi-topbar nav {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid var(--hris-border) !important;
+    box-shadow: none !important;
+}
+
+/* ============================================================
+   5. STAT WIDGET
+   ============================================================ */
+.fi-wi-stats-overview-stat {
+    background-color: #ffffff !important;
+    border: 1px solid var(--hris-border) !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.fi-wi-stats-overview-stat::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--hris-aqua), var(--hris-cyan-light));
+    border-radius: 14px 14px 0 0;
+}
+
+.fi-wi-stats-overview-stat-label {
+    color: var(--hris-text-muted) !important;
+    font-size: 0.75rem !important;
+}
+
+.fi-wi-stats-overview-stat-value {
+    color: var(--hris-teal) !important;
+    font-weight: 700 !important;
+    font-size: 1.6rem !important;
+}
+
+.fi-wi-stats-overview-stat-description {
+    color: var(--hris-text-subtle) !important;
+    font-size: 0.75rem !important;
+}
+
+.fi-wi-stats-overview-stat-icon {
+    background-color: #e0fdf8 !important;
+    border-radius: 10px !important;
+    color: var(--hris-cyan) !important;
+}
+
+/* ============================================================
+   6. SECTION / CARD
+   ============================================================ */
+.fi-section,
+.fi-card,
+.fi-wi-account,
+.fi-wi-filament-info {
+    background-color: #ffffff !important;
+    border: 1px solid var(--hris-border) !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+}
+
+.fi-section-header {
+    border-bottom: 1px solid var(--hris-border-light) !important;
+}
+
+.fi-section-header-heading {
+    color: var(--hris-teal) !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================================
+   7. TABLE
+   ============================================================ */
+.fi-ta-table-wrapper,
+.fi-ta-content {
+    border-radius: 14px !important;
+    border: 1px solid var(--hris-border) !important;
+    background: #ffffff !important;
+}
+
+.fi-ta-header-cell {
+    background-color: var(--hris-mint-bg) !important;
+    color: var(--hris-text-subtle) !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    border-bottom: 1px solid var(--hris-border) !important;
+}
+
+.fi-ta-row {
+    border-bottom: 1px solid var(--hris-mint-bg) !important;
+    transition: background 0.1s !important;
+}
+
+.fi-ta-row:hover td,
+.fi-ta-row:hover {
+    background-color: #f5fdfc !important;
+}
+
+.fi-ta-cell {
+    color: var(--hris-text-main) !important;
+    font-size: 0.875rem !important;
+}
+
+/* Search */
+.fi-ta-search-field input {
+    background-color: var(--hris-mint-bg) !important;
+    border: 1px solid var(--hris-border) !important;
+    border-radius: 10px !important;
+    color: var(--hris-text-main) !important;
+}
+
+.fi-ta-search-field input:focus {
+    border-color: var(--hris-cyan) !important;
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.12) !important;
+    outline: none !important;
+}
+
+/* Pagination */
+.fi-pagination {
+    border-top: 1px solid var(--hris-border-light) !important;
+}
+
+.fi-pagination-item-btn[aria-current="page"],
+.fi-pagination-item-btn.fi-active {
+    background-color: var(--hris-cyan) !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    border-color: var(--hris-cyan) !important;
+}
+
+/* ============================================================
+   8. FORM INPUT
+   ============================================================ */
+.fi-input,
+.fi-select-input,
+.fi-textarea,
+[data-fi-input],
+input.fi-input,
+textarea.fi-textarea {
+    background-color: var(--hris-mint-bg) !important;
+    border: 1px solid var(--hris-border) !important;
+    border-radius: 10px !important;
+    color: var(--hris-text-main) !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.875rem !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+}
+
+.fi-input:focus,
+.fi-select-input:focus,
+.fi-textarea:focus {
+    border-color: var(--hris-cyan) !important;
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.12) !important;
+    outline: none !important;
+    background-color: #ffffff !important;
+}
+
+/* Label */
+.fi-fo-field-wrp-label label,
+label.fi-label {
+    color: var(--hris-teal) !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+}
+
+/* Helper / hint */
+.fi-fo-helper-text,
+p.fi-fo-hint-wrapper {
+    color: var(--hris-text-subtle) !important;
+    font-size: 0.75rem !important;
+}
+
+/* ============================================================
+   9. BUTTON
+   ============================================================ */
+
+/* Primary */
+.fi-btn.fi-color-custom.fi-btn-color-primary,
+.fi-btn.fi-color-primary,
+button[class*="fi-btn"][class*="primary"]:not([class*="outlined"]) {
+    background: linear-gradient(135deg, var(--hris-cyan-light), var(--hris-cyan)) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+    font-weight: 500 !important;
+    box-shadow: 0 2px 8px rgba(6,182,212,0.25) !important;
+    transition: opacity 0.15s, transform 0.1s !important;
+}
+
+.fi-btn.fi-color-primary:hover {
+    opacity: 0.9 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Gray / secondary */
+.fi-btn.fi-color-gray {
+    background: #ffffff !important;
+    border: 1px solid var(--hris-border) !important;
+    border-radius: 10px !important;
+    color: var(--hris-teal) !important;
+}
+
+.fi-btn.fi-color-gray:hover {
+    background: var(--hris-mint-bg) !important;
+    border-color: var(--hris-cyan) !important;
+}
+
+/* Danger */
+.fi-btn.fi-color-danger {
+    background: linear-gradient(135deg, #fb7185, #f43f5e) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+}
+
+/* ============================================================
+   10. BADGE
+   ============================================================ */
+.fi-badge {
+    border-radius: 20px !important;
+    font-size: 0.7rem !important;
+    font-weight: 500 !important;
+    padding: 2px 10px !important;
+}
+
+.fi-color-success.fi-badge { background-color: #d5faf5 !important; color: #0d9488 !important; }
+.fi-color-warning.fi-badge { background-color: #fef3c7 !important; color: #d97706 !important; }
+.fi-color-danger.fi-badge  { background-color: #ffe4e6 !important; color: #e11d48 !important; }
+.fi-color-info.fi-badge    { background-color: #cffafe !important; color: var(--hris-teal) !important; }
+.fi-color-primary.fi-badge { background-color: var(--hris-mint-200) !important; color: var(--hris-teal) !important; }
+
+/* ============================================================
+   11. MODAL
+   ============================================================ */
+.fi-modal-window {
+    background-color: #ffffff !important;
+    border: 1px solid var(--hris-border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(14,116,144,0.12) !important;
+}
+
+.fi-modal-header {
+    border-bottom: 1px solid var(--hris-border-light) !important;
+}
+
+.fi-modal-heading {
+    color: var(--hris-teal) !important;
+    font-weight: 600 !important;
+}
+
+.fi-modal-footer {
+    border-top: 1px solid var(--hris-border-light) !important;
+    background-color: var(--hris-mint-bg) !important;
+    border-radius: 0 0 16px 16px !important;
+}
+
+/* ============================================================
+   12. DROPDOWN
+   ============================================================ */
+.fi-dropdown-panel {
+    background-color: #ffffff !important;
+    border: 1px solid var(--hris-border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(14,116,144,0.1) !important;
+}
+
+.fi-dropdown-list-item-button {
+    color: var(--hris-text-main) !important;
+    font-size: 0.875rem !important;
+    border-radius: 8px !important;
+    transition: background 0.1s !important;
+}
+
+.fi-dropdown-list-item-button:hover {
+    background-color: var(--hris-mint-bg) !important;
+    color: var(--hris-teal) !important;
+}
+
+/* ============================================================
+   13. TABS
+   ============================================================ */
+.fi-tabs-tab {
+    color: var(--hris-text-muted) !important;
+    font-size: 0.875rem !important;
+    transition: color 0.15s !important;
+}
+
+.fi-tabs-tab:hover {
+    color: var(--hris-teal) !important;
+}
+
+.fi-tabs-tab[aria-selected="true"] {
+    color: var(--hris-cyan) !important;
+    border-bottom-color: var(--hris-cyan) !important;
+    font-weight: 500 !important;
+}
+
+/* ============================================================
+   14. TOGGLE / SWITCH
+   ============================================================ */
+.fi-toggle-btn[aria-checked="true"] {
+    background-color: var(--hris-cyan) !important;
+}
+
+/* ============================================================
+   15. NOTIFICATION
+   ============================================================ */
+.fi-no-notification {
+    border-radius: 12px !important;
+    border: 1px solid var(--hris-border) !important;
+    box-shadow: 0 8px 24px rgba(6,182,212,0.12) !important;
+}
+
+/* ============================================================
+   16. ACTION ICON BUTTON
+   ============================================================ */
+.fi-icon-btn {
+    color: var(--hris-text-muted) !important;
+    border-radius: 8px !important;
+    transition: background 0.15s, color 0.15s !important;
+}
+
+.fi-icon-btn:hover {
+    background-color: var(--hris-mint-bg) !important;
+    color: var(--hris-teal) !important;
+}
+
+/* ============================================================
+   17. HALAMAN LOGIN
+   ============================================================ */
+.fi-simple-layout {
+    background: linear-gradient(135deg, #f0fafa 0%, #e0f5f2 50%, #cffafe 100%) !important;
+    min-height: 100vh !important;
+}
+
+.fi-simple-main {
+    background: #ffffff !important;
+    border: 1px solid var(--hris-border) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(14,116,144,0.1) !important;
+}
+
+.fi-simple-header img {
+    border-radius: 50% !important;
+    width: 80px !important;
+    height: 80px !important;
+    object-fit: cover !important;
+    border: 3px solid var(--hris-border) !important;
+    box-shadow: 0 4px 16px rgba(6,182,212,0.2) !important;
+}
+
+.fi-simple-header-heading {
+    color: var(--hris-teal) !important;
+    font-weight: 700 !important;
+}
+
+.fi-simple-header-subheading {
+    color: var(--hris-text-muted) !important;
+}
+
+/* ============================================================
+   18. SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--hris-mint-bg); }
+::-webkit-scrollbar-thumb { background: var(--hris-border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--hris-aqua); }

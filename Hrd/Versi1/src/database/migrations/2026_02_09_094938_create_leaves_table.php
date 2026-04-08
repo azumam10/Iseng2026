@@ -35,6 +35,9 @@ return new class extends Migration
             $table->foreignId('approved_by')
             ->nullable()
             ->constrained('users');
+
+            $table->index(['pegawai_id', 'status']);
+            $table->index(['start_date', 'end_date']);
             
             $table->timestamp('approved_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();

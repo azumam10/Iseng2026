@@ -46,4 +46,10 @@ class Pegawai extends Model
     {
         return $query->where('status', 'aktif');
     }
+
+    public function user()
+{
+    return $this->belongsTo(User::class);
+}
+
 }
