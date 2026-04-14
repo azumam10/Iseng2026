@@ -45,10 +45,6 @@ class EmployeesTable
                     ->placeholder('-')
                     ->toggleable(),
 
-                TextColumn::make('level')
-                    ->label('Level')
-                    ->placeholder('-')
-                    ->toggleable(),
 
                 // ─── Status & Gender ──────────────────────────────────────────
                 TextColumn::make('employment_status')

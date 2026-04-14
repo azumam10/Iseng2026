@@ -85,12 +85,6 @@ class EmployeeInfolist
                             ->placeholder('-')
                             ->weight(FontWeight::Medium),
 
-                        TextEntry::make('level')
-                            ->label('Level / Grade')
-                            ->icon('heroicon-m-bars-3-bottom-left')
-                            ->iconPosition(IconPosition::Before)
-                            ->placeholder('-'),
-
                         TextEntry::make('department.name')
                             ->label('Departemen')
                             ->icon('heroicon-m-building-library')

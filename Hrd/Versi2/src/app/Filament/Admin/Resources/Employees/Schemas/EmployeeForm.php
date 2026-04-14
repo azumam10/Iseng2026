@@ -94,11 +94,6 @@ class EmployeeForm
                             ->nullable()
                             ->placeholder('Pilih jabatan'),
 
-                        TextInput::make('level')
-                            ->label('Level / Grade')
-                            ->placeholder('Contoh: Staff, Supervisor, Manager')
-                            ->nullable(),
-
                         Select::make('department_id')
                             ->label('Departemen')
                             ->relationship('department', 'name')

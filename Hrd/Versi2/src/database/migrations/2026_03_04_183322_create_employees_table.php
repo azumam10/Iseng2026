@@ -16,7 +16,6 @@ return new class extends Migration
         $table->string('id_number')->unique(); // ID.No
         $table->string('name');
         $table->foreignId('position_id')->nullable()->constrained()->nullOnDelete();
-        $table->string('level')->nullable(); // bisa diisi manual atau dari relasi position
         $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
         $table->foreignId('section_id')->nullable()->constrained()->nullOnDelete();
         $table->enum('employment_status', ['PKWTT', 'PKWT', 'HARIAN', 'DIREKTUR'])->default('PKWT');
