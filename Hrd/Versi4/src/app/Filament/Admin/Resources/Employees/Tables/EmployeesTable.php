@@ -16,57 +16,51 @@ class EmployeesTable
         return $table
             ->columns([
                 TextColumn::make('nik')
-                    ->searchable(),
+                    ->label('NIK')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('nama')
-                    ->searchable(),
+                    ->label('Nama')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('no_ktp')
+                    ->label('No. KTP')
                     ->searchable(),
-                TextColumn::make('agama')
-                    ->searchable(),
+
                 TextColumn::make('status_karyawan')
-                    ->searchable(),
+                    ->label('Status')
+                    ->badge()
+                    ->color('info'),
+
                 TextColumn::make('jenis_kelamin')
-                    ->badge(),
-                TextColumn::make('tanggal_lahir')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('pendidikan')
-                    ->searchable(),
-                TextColumn::make('status_pernikahan')
-                    ->searchable(),
+                    ->label('JK')
+                    ->badge()
+                    ->color(fn (string $state): string => $state === 'L' ? 'success' : 'danger'),
+
                 TextColumn::make('tanggal_masuk')
-                    ->date()
+                    ->label('Masuk')
+                    ->date('d M Y')
                     ->sortable(),
-                TextColumn::make('awal_kontrak')
-                    ->date()
+
+                TextColumn::make('department.name')
+                    ->label('Departemen')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('akhir_kontrak')
-                    ->date()
-                    ->sortable(),
+
                 TextColumn::make('jabatan')
+                    ->label('Jabatan')
                     ->searchable(),
-                TextColumn::make('department_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('bagian_text')
-                    ->searchable(),
-                TextColumn::make('kepala_bagian_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
+                    ->label('Dibuat')
+                    ->dateTime('d M Y H:i')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('tanggal_masuk', 'desc')
             ->filters([
-                //
+                // nanti bisa ditambah filter departemen dll
             ])
             ->recordActions([
                 ViewAction::make(),

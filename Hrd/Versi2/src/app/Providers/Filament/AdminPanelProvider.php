@@ -35,6 +35,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jacobtims\FilamentLogger\FilamentLoggerPlugin;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Openplain\FilamentShadcnTheme\Color;
+use App\Filament\Pages\Auth\Register;
 
 final class AdminPanelProvider extends PanelProvider
 {
@@ -48,8 +49,27 @@ final class AdminPanelProvider extends PanelProvider
             ->spa()
             ->spaUrlExceptions([
                 Dashboard::class,
-            ])
-            ->login()
+                ])
+                // ->registration(Register::class)
+                ->login()
+                ->registration(Register::class)
+->homeUrl(function () {
+    $user = auth()->user();
+
+    if ($user->hasRole('hrd')) {
+        return '/admin'; // dashboard HRD
+    }
+
+    if ($user->hasRole('kepala_bagian')) {
+        return '/admin';
+    }
+
+    if ($user->hasRole('employee')) {
+        return '/admin/leave-requests';
+    }
+
+    return '/admin';
+})
             ->topbar(false)
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('16rem')
@@ -89,6 +109,7 @@ final class AdminPanelProvider extends PanelProvider
                         ->mediaSize('70%')
                         ->blur(1)
                     )
+
                     ->themeToggle('90%', '50%'),
                 BreezyCore::make()
                     ->myProfile(
@@ -143,6 +164,7 @@ final class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+              
             ])
             ->viteTheme('resources/css/filament/admin/theme.css');
     }
