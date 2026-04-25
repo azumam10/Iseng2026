@@ -31,21 +31,14 @@ class LeaveRequestForm
                             return $query->where('supervisor_id', $user->employee->id);
                             }
                             
-                            // karyawan biasa → hanya dirinya sendiri
-                            if ($user->hasRole('employee')) {
-                                return $query->where('user_id', $user->id);
-                                }
-                                
-                                // HRD → semua
-                                return $query;
-        }
-    )
-    ->searchable()
-    ->preload()
-    ->required()
-    ->default(fn () => auth()->user()->employee?->id)
-    ->disabled(fn () => auth()->user()->hasRole('employee')),
-
+                            // HRD → semua
+                            return $query;
+                            }
+                            )
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+    
                 // 🔥 LEAVE TYPE
                 Select::make('leave_type_id')
                     ->label('Jenis Cuti')

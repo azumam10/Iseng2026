@@ -3,11 +3,12 @@
 namespace App\Filament\Admin\Resources\LeaveRequests\Tables;
 
 use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Textarea;
 
 class LeaveRequestsTable
 {
@@ -22,83 +23,72 @@ class LeaveRequestsTable
                 TextColumn::make('leaveType.name')
                     ->label('Jenis Cuti'),
 
-                TextColumn::make('start_date')->date(),
-                TextColumn::make('end_date')->date(),
+                TextColumn::make('start_date')
+                    ->label('Tgl Mulai')
+                    ->date(),
+
+                TextColumn::make('end_date')
+                    ->label('Tgl Selesai')
+                    ->date(),
 
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending_head' => 'warning',
-                        'pending_hrd'  => 'info',
-                        'approved'     => 'success',
-                        'rejected'     => 'danger',
-                        default        => 'gray',
+                    ->color(fn (string $state) => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        default => 'gray',
                     }),
 
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->label('Dibuat'),
-            ])
+                TextColumn::make('requestedBy.name')
+                    ->label('Diinput Oleh'),
 
-            ->recordActions([
+                TextColumn::make('hrdApprovedBy.name')
+                    ->label('Disetujui HRD'),
+            ])
+            ->actions([
                 ViewAction::make(),
 
-                // === APPROVE KEPALA BAGIAN ===
-                Action::make('approve_head')
-                    ->label('Approve (Kabag)')
+                // APPROVE HRD
+                Action::make('approve')
+                    ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) =>
-                        auth()->user()->hasRole('kepala_bagian') &&
-                        $record->status === 'pending_head'
+                    ->visible(fn ($record) => 
+                        auth()->user()->hasRole('hrd') && 
+                        $record->status === 'pending'
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status'            => 'pending_hrd',
-                            'kabag_approved_by' => auth()->id(),
-                        ]);
-                    }),
-
-                // === APPROVE HRD ===
-                Action::make('approve_hrd')
-                    ->label('Approve (HRD)')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) =>
-                        auth()->user()->hasRole('hrd') &&
-                        $record->status === 'pending_hrd'
-                    )
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status'          => 'approved',
+                            'status' => 'approved',
                             'hrd_approved_by' => auth()->id(),
                         ]);
                     }),
 
-                // === REJECT (HRD) ===
+                // REJECT HRD
                 Action::make('reject')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn () => auth()->user()->hasRole('hrd'))
-                    ->requiresConfirmation()
+                    ->visible(fn ($record) => 
+                        auth()->user()->hasRole('hrd') && 
+                        $record->status === 'pending'
+                    )
                     ->form([
-                        \Filament\Forms\Components\Textarea::make('notes')
-                            ->label('Alasan Ditolak')
+                        Textarea::make('notes')
+                            ->label('Alasan Penolakan')
                             ->required(),
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status'       => 'rejected',
-                            'rejected_by'  => auth()->id(),
-                            'notes'        => $data['notes'],
+                            'status' => 'rejected',
+                            'rejected_by' => auth()->id(),
+                            'notes' => $data['notes'],
                         ]);
                     }),
             ])
-
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

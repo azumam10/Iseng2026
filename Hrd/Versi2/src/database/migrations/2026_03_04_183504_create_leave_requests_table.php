@@ -8,53 +8,32 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('leave_requests', function (Blueprint $table) {
+        Schema::create('leave_requests', function (Blueprint $table) {
+            $table->id();
             
-            // === TAMBAHKAN KOLOM BARU (Kabag, HRD, Reject) ===
-            if (!$table->hasColumn('kabag_approved_by')) {
-                $table->foreignId('kabag_approved_by')->nullable()
-                      ->constrained('users')
-                      ->nullOnDelete();
-            }
+            $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('leave_type_id')->constrained()->cascadeOnDelete();
+            
+            // siapa yang input (kepala bagian)
+            $table->foreignId('requested_by_user_id')->constrained('users')->cascadeOnDelete();
+            
+            // approval HRD
+            $table->foreignId('hrd_approved_by')->nullable()->constrained('users')->nullOnDelete();
+            
+            // reject
+            $table->foreignId('rejected_by')->nullable()->constrained('users')->nullOnDelete();
+            
+            $table->date('start_date');
+            $table->date('end_date');
+            
+            $table->text('reason')->nullable();
+            $table->text('notes')->nullable();
+            
+            $table->enum('status', ['pending', 'approved', 'rejected'])
+            ->default('pending');
+            $table->timestamps();
 
-            if (!$table->hasColumn('hrd_approved_by')) {
-                $table->foreignId('hrd_approved_by')->nullable()
-                      ->constrained('users')
-                      ->nullOnDelete();
-            }
-
-            if (!$table->hasColumn('rejected_by')) {
-                $table->foreignId('rejected_by')->nullable()
-                      ->constrained('users')
-                      ->nullOnDelete();
-            }
-
-            // === HAPUS KOLOM LAMA approved_by_user_id ===
-            if ($table->hasColumn('approved_by_user_id')) {
-                // Hapus foreign key dulu
-                $table->dropForeign(['approved_by_user_id']);
-                // Baru hapus kolomnya
-                $table->dropColumn('approved_by_user_id');
-            }
-        });
+});
     }
-
-    public function down(): void
-    {
-        Schema::table('leave_requests', function (Blueprint $table) {
-            // Kembalikan kolom lama
-            if (!$table->hasColumn('approved_by_user_id')) {
-                $table->foreignId('approved_by_user_id')->nullable()
-                      ->constrained('users')
-                      ->nullOnDelete();
-            }
-
-            // Hapus kolom baru
-            $table->dropForeign(['kabag_approved_by']);
-            $table->dropForeign(['hrd_approved_by']);
-            $table->dropForeign(['rejected_by']);
-
-            $table->dropColumn(['kabag_approved_by', 'hrd_approved_by', 'rejected_by']);
-        });
-    }
+  
 };

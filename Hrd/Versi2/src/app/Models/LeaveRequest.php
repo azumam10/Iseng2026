@@ -8,64 +8,52 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class LeaveRequest extends Model
 {
     protected $fillable = [
-        'employee_id',
-        'leave_type_id',
-        'requested_by_user_id',
-        'kabag_approved_by',
-        'hrd_approved_by',
-        'rejected_by',
-        'start_date',
-        'end_date',
-        'reason',
-        'notes',
-        'status',
-    ];
+    'employee_id',
+    'leave_type_id',
+    'requested_by_user_id',
+    'hrd_approved_by',
+    'rejected_by',
+    'start_date',
+    'end_date',
+    'reason',
+    'notes',
+    'status',
+];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
     ];
 
-    // ==================== RELATIONSHIPS ====================
-    public function employee(): BelongsTo
+    // RELATION
+    public function employee()
     {
         return $this->belongsTo(Employee::class);
     }
 
-    public function leaveType(): BelongsTo
+    public function leaveType()
     {
         return $this->belongsTo(LeaveType::class);
     }
 
-    public function requestedBy(): BelongsTo
+    public function requestedBy()
     {
         return $this->belongsTo(User::class, 'requested_by_user_id');
     }
 
-    public function kabagApprovedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'kabag_approved_by');
-    }
-
     public function hrdApprovedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'hrd_approved_by');
-    }
-
-    public function rejectedBy(): BelongsTo
+{
+    return $this->belongsTo(User::class, 'hrd_approved_by');
+}
+    public function rejectedBy()
     {
         return $this->belongsTo(User::class, 'rejected_by');
     }
 
-    // ==================== SCOPES ====================
-    public function scopePendingHead($query)
+    // 🔥 SIMPLIFIED SCOPES
+    public function scopePending($query)
     {
-        return $query->where('status', 'pending_head');
-    }
-
-    public function scopePendingHrd($query)
-    {
-        return $query->where('status', 'pending_hrd');
+        return $query->where('status', 'pending');
     }
 
     public function scopeApproved($query)
@@ -77,4 +65,14 @@ class LeaveRequest extends Model
     {
         return $query->where('status', 'rejected');
     }
+
+   
+    protected static function booted()
+{
+    static::creating(function ($model) {
+        if (is_null($model->requested_by_user_id) && auth()->check()) {
+            $model->requested_by_user_id = auth()->id();
+        }
+    });
+}
 }

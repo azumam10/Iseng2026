@@ -12,17 +12,23 @@ class LeaveRequestStats extends BaseWidget
 {
     protected function getStats(): array
     {
-        $year = Carbon::now()->year; // otomatis 2026 (atau tahun berjalan)
+        $year = Carbon::now()->year;
 
-        $total      = LeaveRequest::whereYear('created_at', $year)->count();
-        $approved   = LeaveRequest::approved()->whereYear('created_at', $year)->count();
-        $rejected   = LeaveRequest::rejected()->whereYear('created_at', $year)->count();
-        
-        // Pending = pending_head + pending_hrd
-        $pending    = LeaveRequest::pendingHead()->whereYear('created_at', $year)->count() +
-                      LeaveRequest::pendingHrd()->whereYear('created_at', $year)->count();
+        $total = LeaveRequest::whereYear('created_at', $year)->count();
 
-        $url = LeaveRequestResource::getUrl('index'); // klik → daftar cuti
+        $approved = LeaveRequest::approved()    
+            ->whereYear('created_at', $year)
+            ->count();
+
+        $rejected = LeaveRequest::rejected()
+            ->whereYear('created_at', $year)
+            ->count();
+
+        $pending = LeaveRequest::pending()
+            ->whereYear('created_at', $year)
+            ->count();
+
+        $url = LeaveRequestResource::getUrl('index');
 
         return [
             Stat::make("Total Pengajuan Cuti {$year}", $total)
@@ -38,7 +44,7 @@ class LeaveRequestStats extends BaseWidget
                 ->url($url),
 
             Stat::make('Pending', $pending)
-                ->description("Menunggu persetujuan (Kabag + HRD) {$year}")
+                ->description("Menunggu persetujuan HRD {$year}")
                 ->icon('heroicon-o-clock')
                 ->color('warning')
                 ->url($url),

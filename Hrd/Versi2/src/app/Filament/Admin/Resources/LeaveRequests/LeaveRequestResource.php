@@ -49,32 +49,27 @@ class LeaveRequestResource extends Resource
 
 public static function getEloquentQuery(): Builder
 {
-    $query = parent::getEloquentQuery();
     $user = auth()->user();
 
     // HRD → lihat semua
     if ($user->hasRole('hrd')) {
-        return $query;
+        return parent::getEloquentQuery();
     }
 
-    // Kepala Bagian → hanya cuti bawahan
-    if ($user->hasRole('kepala_bagian') && $user->employee) {
-        return $query->whereHas('employee', function ($q) use ($user) {
-            $q->where('supervisor_id', $user->employee->id);
-        });
+    // Kepala Bagian → hanya bawahan
+    if ($user->hasRole('kepala_bagian')) {
+        return parent::getEloquentQuery()
+            ->whereHas('employee', fn ($q) =>
+                $q->where('supervisor_id', $user->employee->id)
+            );
     }
 
-    // Karyawan → hanya cuti dirinya sendiri
-    if ($user->hasRole('employee')) {
-        return $query->whereHas('employee', function ($q) use ($user) {
-            $q->where('user_id', $user->id);
-        });
-    }
-
-    return $query;
+    // Karyawan → hanya dirinya
+    return parent::getEloquentQuery()
+        ->where('employee_id', $user->employee->id);
 }
 
-// Tambahkan ini di class LeaveRequestResource
+
 public static function canCreate(): bool
 {
     return auth()->user()->hasAnyRole(['kepala_bagian', 'hrd']);
