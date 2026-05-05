@@ -16,17 +16,23 @@ class DepartmentsTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Nama Departemen')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('semibold'),
+
                 TextColumn::make('code')
-                    ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Kode')
+                    ->searchable()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->badge()
+                    ->color(fn (?string $state): string => 
+                        $state === null ? 'gray' : 'primary'
+                    )
+                    ->formatStateUsing(fn (?string $state): string => 
+                        $state ?? '-'
+                    ),
+
             ])
             ->filters([
                 //

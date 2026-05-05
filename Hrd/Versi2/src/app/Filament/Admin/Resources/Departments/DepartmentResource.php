@@ -15,12 +15,19 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
+
 
 class DepartmentResource extends Resource
 {
     protected static ?string $model = Department::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?string $navigationLabel = 'Department';
+    protected static ?string $pluralModelLabel = 'Data Department';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Struktur Perusahaan';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-library';
 
     public static function form(Schema $schema): Schema
     {

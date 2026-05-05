@@ -2,8 +2,9 @@
 
 namespace App\Filament\Admin\Resources\Positions\Schemas;
 
-use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 
 class PositionInfolist
 {
@@ -11,15 +12,19 @@ class PositionInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('name'),
-                TextEntry::make('level')
-                    ->placeholder('-'),
-                TextEntry::make('created_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->dateTime()
-                    ->placeholder('-'),
+                Section::make('Detail Jabatan')
+                    ->schema([
+                        TextEntry::make('name')->label('Nama'),
+
+                        TextEntry::make('level')
+                            ->badge()
+                            ->color('primary')
+                            ->placeholder('-'),
+
+                        TextEntry::make('created_at')->dateTime(),
+                        TextEntry::make('updated_at')->dateTime(),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

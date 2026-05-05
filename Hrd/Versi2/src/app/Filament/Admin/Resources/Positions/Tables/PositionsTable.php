@@ -15,26 +15,44 @@ class PositionsTable
     {
         return $table
             ->columns([
+
                 TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Nama Jabatan')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+
                 TextColumn::make('level')
-                    ->searchable(),
+                    ->label('Level')
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'MANAGER' => 'danger',
+                        'KEPALA BAGIAN' => 'warning',
+                        'STAFF' => 'info',
+                        'OPERATOR' => 'success',
+                        default => 'gray',
+                    })
+                    ->sortable(),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat')
+                    ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Update')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
-            ])
+
+            ->defaultSort('created_at', 'desc')
+
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
             ])
+
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

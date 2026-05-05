@@ -2,8 +2,9 @@
 
 namespace App\Filament\Admin\Resources\Positions\Schemas;
 
-use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
 
 class PositionForm
 {
@@ -11,10 +12,17 @@ class PositionForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('level')
-                    ->default(null),
+                Section::make('Informasi Jabatan')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Nama Jabatan')
+                            ->required(),
+
+                        TextInput::make('level')
+                            ->label('Level')
+                            ->placeholder('STAFF / MANAGER'),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

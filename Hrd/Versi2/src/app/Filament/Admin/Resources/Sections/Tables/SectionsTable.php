@@ -16,26 +16,35 @@ class SectionsTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Section')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+
+                TextColumn::make('department.name') 
+                    ->label('Department')
+                    ->badge()
+                    ->color('info')
+                    ->sortable()
                     ->searchable(),
-                TextColumn::make('department_id')
-                    ->numeric()
-                    ->sortable(),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
+                    ->since()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
-            ])
+
+            ->defaultSort('created_at', 'desc')
+
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
             ])
+
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

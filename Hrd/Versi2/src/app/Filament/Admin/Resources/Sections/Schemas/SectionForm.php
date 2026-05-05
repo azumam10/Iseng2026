@@ -2,8 +2,10 @@
 
 namespace App\Filament\Admin\Resources\Sections\Schemas;
 
-use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 
 class SectionForm
 {
@@ -11,11 +13,21 @@ class SectionForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('department_id')
-                    ->required()
-                    ->numeric(),
+                Section::make('Informasi Section')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Nama Section')
+                            ->required()
+                            ->maxLength(100),
+
+                        Select::make('department_id')
+                            ->label('Department')
+                            ->relationship('department', 'name') 
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

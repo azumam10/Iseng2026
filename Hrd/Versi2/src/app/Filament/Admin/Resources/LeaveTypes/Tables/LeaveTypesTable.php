@@ -16,8 +16,10 @@ class LeaveTypesTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Jenis Cuti')
                     ->searchable(),
                 TextColumn::make('quota_per_year')
+                    ->label('Quota Pertahun')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')

@@ -10,17 +10,23 @@ use App\Filament\Admin\Resources\Sections\Schemas\SectionForm;
 use App\Filament\Admin\Resources\Sections\Schemas\SectionInfolist;
 use App\Filament\Admin\Resources\Sections\Tables\SectionsTable;
 use App\Models\Section;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use BackedEnum;
+use UnitEnum;
 
 class SectionResource extends Resource
 {
     protected static ?string $model = Section::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?string $navigationLabel = 'Section';
+    protected static ?string $pluralModelLabel = 'Data Section';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Struktur Perusahaan';
+
+    // ✅ WAJIB ADA ;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-inbox-stack';
 
     public static function form(Schema $schema): Schema
     {
@@ -39,9 +45,7 @@ class SectionResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

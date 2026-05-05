@@ -16,12 +16,20 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class LeaveRequestResource extends Resource
 {
     protected static ?string $model = LeaveRequest::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    
+    protected static ?string $navigationLabel = 'Permintaan Cuti';
+    protected static ?string $modelLabel = 'Permintaan Cuti';
+    protected static ?string $pluralModelLabel = 'Permintaan Cuti';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Management Cuti';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-s-chat-bubble-left-right';
 
     public static function form(Schema $schema): Schema
     {
@@ -51,28 +59,33 @@ public static function getEloquentQuery(): Builder
 {
     $user = auth()->user();
 
-    // HRD → lihat semua
-    if ($user->hasRole('hrd')) {
+    // 🔥 SUPER ADMIN & HRD → FULL ACCESS
+    if ($user->hasAnyRole(['super_admin', 'hrd'])) {
         return parent::getEloquentQuery();
     }
 
-    // Kepala Bagian → hanya bawahan
-    if ($user->hasRole('kepala_bagian')) {
+    // 🔥 KEPALA BAGIAN → bawahan
+    if ($user->hasRole('kepala_bagian') && $user->employee) {
         return parent::getEloquentQuery()
             ->whereHas('employee', fn ($q) =>
                 $q->where('supervisor_id', $user->employee->id)
             );
     }
 
-    // Karyawan → hanya dirinya
-    return parent::getEloquentQuery()
-        ->where('employee_id', $user->employee->id);
+    // 🔥 EMPLOYEE → diri sendiri
+    if ($user->hasRole('employee') && $user->employee) {
+        return parent::getEloquentQuery()
+            ->where('employee_id', $user->employee->id);
+    }
+
+    // 🔥 fallback biar ga kosong total
+    return parent::getEloquentQuery()->whereRaw('1 = 0');
 }
 
 
 public static function canCreate(): bool
 {
-    return auth()->user()->hasAnyRole(['kepala_bagian', 'hrd']);
+   return auth()->user()->hasAnyRole(['kepala_bagian', 'hrd', 'super_admin']);
 }
     public static function getPages(): array
     {

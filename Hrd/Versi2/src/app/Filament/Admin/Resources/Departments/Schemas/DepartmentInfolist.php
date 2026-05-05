@@ -10,16 +10,36 @@ class DepartmentInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(2)
             ->components([
-                TextEntry::make('name'),
+                TextEntry::make('name')
+                    ->label('Nama Departemen')
+                    ->copyable()
+                    ->weight('bold'),
+
                 TextEntry::make('code')
-                    ->placeholder('-'),
+                    ->label('Kode Departemen')
+                    ->placeholder('-')
+                    ->badge()
+                    ->color('primary'),
+
                 TextEntry::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat Pada')
+                    ->dateTime('d F Y H:i:s')
+                    ->icon('heroicon-o-calendar')
                     ->placeholder('-'),
+
                 TextEntry::make('updated_at')
-                    ->dateTime()
+                    ->label('Terakhir Diperbarui')
+                    ->dateTime('d F Y H:i:s')
+                    ->icon('heroicon-o-arrow-path')
                     ->placeholder('-'),
+
+                TextEntry::make('deleted_at')
+                    ->label('Dihapus Pada')
+                    ->dateTime('d F Y H:i:s')
+                    ->icon('heroicon-o-trash')
+                    ->placeholder('Masih aktif'),
             ]);
     }
 }

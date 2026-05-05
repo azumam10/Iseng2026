@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Departments\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rule;
 
 class DepartmentForm
 {
@@ -12,9 +13,20 @@ class DepartmentForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->required(),
+                    ->label('Nama Departemen')
+                    ->required()
+                    ->maxLength(255)
+                    ->unique(ignoreRecord: true)
+                    ->helperText('Nama departemen harus unik, contoh: "Sumber Daya Manusia"')
+                    ->placeholder('Masukkan nama departemen'),
+
                 TextInput::make('code')
-                    ->default(null),
+                    ->label('Kode Departemen')
+                    ->nullable()
+                    ->maxLength(50)
+                    ->unique(ignoreRecord: true)
+                    ->helperText('Kode opsional, jika diisi harus unik. Contoh: "HRD"')
+                    ->placeholder('Contoh: HRD, FIN, IT'),
             ]);
     }
 }
