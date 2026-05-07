@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->foreignId('leave_type_id')->constrained()->cascadeOnDelete();
             
-            // siapa yang input (kepala bagian)
+            // yang input (kepala bagian)
             $table->foreignId('requested_by_user_id')->constrained('users')->cascadeOnDelete();
             
             // approval HRD
@@ -28,9 +28,8 @@ return new class extends Migration
             
             $table->text('reason')->nullable();
             $table->text('notes')->nullable();
-            
-            $table->enum('status', ['pending', 'approved', 'rejected'])
-            ->default('pending');
+            $table->string('document')->nullable();
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
 
 });

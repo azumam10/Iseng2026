@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\LeaveRequest;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 
 class Employee extends Model
 {
@@ -81,4 +84,72 @@ class Employee extends Model
     if ($age <= 45) return 'Gen X';
     return 'Baby Boomers';
 }
+
+// HITUNG SISA CUTI
+/* fungsi jika hari kerja sabtu dan minggu masuk
+public function getRemainingLeaveQuota($leaveTypeId, $year = null)
+{
+    $year = $year ?? Carbon::now()->year;
+    $leaveType = \App\Models\LeaveType::find($leaveTypeId);
+    
+    if (!$leaveType || !$leaveType->quota_per_year) {
+        return null; // tidak terbatas
+    }
+    
+    $usedDays = LeaveRequest::where('employee_id', $this->id)
+        ->where('leave_type_id', $leaveTypeId)
+        ->where('status', 'approved')
+        ->whereYear('start_date', $year)
+        ->get()
+        ->sum(fn($leave) => Carbon::parse($leave->start_date)->diffInDays(Carbon::parse($leave->end_date)) + 1);
+    
+    return $leaveType->quota_per_year - $usedDays;
+}*/
+// hitung cuti jika sabtu dan minggu libur
+// Ganti fungsi getRemainingLeaveQuota yang lama dengan ini:
+public function getRemainingLeaveQuota(int $leaveTypeId, ?int $year = null, ?int $excludeId = null): ?int
+{
+    $year = $year ?? Carbon::now()->year;
+    $leaveType = \App\Models\LeaveType::find($leaveTypeId);
+
+    if (!$leaveType || !$leaveType->quota_per_year) {
+        return null;
+    }
+
+    $usedDays = LeaveRequest::where('employee_id', $this->id)
+        ->where('leave_type_id', $leaveTypeId)
+        ->where('status', 'approved')
+        ->whereYear('start_date', $year)
+        ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+        ->get()
+        ->sum(function ($leave) {
+            $period = CarbonPeriod::create($leave->start_date, $leave->end_date);
+            return $period->filter('isWeekday')->count();
+        });
+
+    return $leaveType->quota_per_year - $usedDays;
+}
+
+// Tambah method untuk summary semua jenis cuti
+public function getAllLeaveBalance(?int $year = null): array
+{
+    $year = $year ?? Carbon::now()->year;
+
+    return \App\Models\LeaveType::whereNotNull('quota_per_year')
+        ->get()
+        ->map(function ($leaveType) use ($year) {
+            $remaining = $this->getRemainingLeaveQuota($leaveType->id, $year);
+            $used      = $leaveType->quota_per_year - $remaining;
+
+            return [
+                'leave_type'    => $leaveType->name,
+                'quota'         => $leaveType->quota_per_year,
+                'used'          => $used,
+                'remaining'     => $remaining,
+            ];
+        })
+        ->toArray();
+}
+
+
 }

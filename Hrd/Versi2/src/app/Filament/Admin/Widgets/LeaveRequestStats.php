@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Widgets;
+namespace App\Filament\Admin\Widgets;
 
 use App\Models\LeaveRequest;
 use App\Filament\Admin\Resources\LeaveRequests\LeaveRequestResource;

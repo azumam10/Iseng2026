@@ -91,7 +91,10 @@ final class AdminPanelProvider extends PanelProvider
             ->widgets([
                 OverlookWidget::class,
                 LatestAccessLogs::class,
-                \App\Filament\Widgets\LeaveRequestStats::class,
+                \App\Filament\Admin\Widgets\LeaveTrendChartWidget::class,
+                \App\Filament\Admin\Widgets\LeaveRequestStats::class,
+                \App\Filament\Admin\Widgets\LeaveBalanceSummaryWidget::class,
+                \App\Filament\Admin\Widgets\TodayOnLeaveWidget::class,
             ])
             ->navigationGroups([
                 NavigationGroup::make()

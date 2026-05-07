@@ -45,7 +45,41 @@ class LeaveRequestsTable
 
                 TextColumn::make('hrdApprovedBy.name')
                     ->label('Disetujui HRD'),
-            ])
+
+                TextColumn::make('document')
+                    ->label('Dokumen')
+                    ->formatStateUsing(fn ($state) => $state ? '📄 Lihat' : '-')
+                    ->url(fn ($record) => $record->document ? asset('storage/' . $record->document) : null)
+                    ->openUrlInNewTab()
+                    ->icon('heroicon-o-document-text'),
+                    
+                    TextColumn::make('days_used')
+                    ->label('Hari Kerja')
+                    ->badge()
+                    ->color('info')
+                    ->suffix(' hari')
+                    ->getStateUsing(fn($record) => $record->days_used),
+                    
+                TextColumn::make('sisa_kuota')
+                    ->label('Sisa Kuota')
+                    ->getStateUsing(function ($record) {
+                        $remaining = $record->employee?->getRemainingLeaveQuota(
+                            $record->leave_type_id,
+                            $record->start_date?->year
+                            );
+                            
+                            if ($remaining === null) return 'Tak terbatas';
+                            return $remaining . ' hari';
+                            })
+                            ->badge()
+                            ->color(fn($state) => match(true) {
+                                str_starts_with($state, '0') => 'danger',
+                                (int) $state <= 3            => 'warning',
+                                default                      => 'success',
+                                }),
+
+
+                    ])
             ->actions([
                 ViewAction::make(),
 

@@ -18,6 +18,7 @@ class LeaveRequest extends Model
     'reason',
     'notes',
     'status',
+    'document',
 ];
 
     protected $casts = [
@@ -50,7 +51,7 @@ class LeaveRequest extends Model
         return $this->belongsTo(User::class, 'rejected_by');
     }
 
-    // 🔥 SIMPLIFIED SCOPES
+    // cuti
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
@@ -75,4 +76,17 @@ class LeaveRequest extends Model
         }
     });
 }
+
+// Function untuk hitung sisa cuti
+
+protected $appends = ['days_used'];
+
+public function getDaysUsedAttribute(): int
+{
+    if (!$this->start_date || !$this->end_date) return 0;
+
+    $period = \Carbon\CarbonPeriod::create($this->start_date, $this->end_date);
+    return $period->filter('isWeekday')->count();
+}
+
 }

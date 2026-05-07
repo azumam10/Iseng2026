@@ -11,36 +11,30 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 class LeaveRequestPolicy
 {
     use HandlesAuthorization;
-
-    public function before($user, $ability)
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        if ($user->hasRole('super_admin')) {
-            return true;
-        }
+        return $authUser->can('ViewAny:LeaveRequest');
     }
 
-    public function viewAny($user): bool
+    public function view(AuthUser $authUser, LeaveRequest $leaveRequest): bool
     {
-        return $user->hasAnyRole(['hrd', 'kepala_bagian', 'employee']);
+        return $authUser->can('View:LeaveRequest');
     }
 
-    public function view($user, LeaveRequest $leaveRequest): bool
+    public function create(AuthUser $authUser): bool
     {
-        return true;
+        return $authUser->can('Create:LeaveRequest');
     }
 
-    public function create($user): bool
+    public function update(AuthUser $authUser, LeaveRequest $leaveRequest): bool
     {
-        return $user->hasAnyRole(['hrd', 'kepala_bagian']);
+        return $authUser->can('Update:LeaveRequest');
     }
 
-    public function update($user, LeaveRequest $leaveRequest): bool
+    public function delete(AuthUser $authUser, LeaveRequest $leaveRequest): bool
     {
-        return $user->hasAnyRole(['hrd']);
+        return $authUser->can('Delete:LeaveRequest');
     }
 
-    public function delete($user, LeaveRequest $leaveRequest): bool
-    {
-        return $user->hasRole('super_admin');
-    }
 }
