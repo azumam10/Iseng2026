@@ -2,56 +2,62 @@
 
 namespace App\Models;
 
+use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LeaveRequest extends Model
 {
     protected $fillable = [
-    'employee_id',
-    'leave_type_id',
-    'requested_by_user_id',
-    'hrd_approved_by',
-    'rejected_by',
-    'start_date',
-    'end_date',
-    'reason',
-    'notes',
-    'status',
-    'document',
-];
+        'employee_id',
+        'leave_type_id',
+        'requested_by_user_id',
+        'hrd_approved_by',
+        'rejected_by',
+        'start_date',
+        'end_date',
+        'reason',
+        'notes',
+        'status',
+        'document',
+    ];
 
     protected $casts = [
         'start_date' => 'date',
-        'end_date' => 'date',
+        'end_date'   => 'date',
     ];
 
-    // RELATION
-    public function employee()
+    protected $appends = ['days_used'];
+
+    // ─── RELATIONS ────────────────────────────────────────────────
+
+    public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
     }
 
-    public function leaveType()
+    public function leaveType(): BelongsTo
     {
         return $this->belongsTo(LeaveType::class);
     }
 
-    public function requestedBy()
+    public function requestedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by_user_id');
     }
 
     public function hrdApprovedBy(): BelongsTo
-{
-    return $this->belongsTo(User::class, 'hrd_approved_by');
-}
-    public function rejectedBy()
+    {
+        return $this->belongsTo(User::class, 'hrd_approved_by');
+    }
+
+    public function rejectedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'rejected_by');
     }
 
-    // cuti
+    // ─── SCOPES ──────────────────────────────────────────────────
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
@@ -67,26 +73,30 @@ class LeaveRequest extends Model
         return $query->where('status', 'rejected');
     }
 
-   
-    protected static function booted()
-{
-    static::creating(function ($model) {
-        if (is_null($model->requested_by_user_id) && auth()->check()) {
-            $model->requested_by_user_id = auth()->id();
+    // ─── ACCESSORS ────────────────────────────────────────────────
+
+    /**
+     * Hitung jumlah hari kerja (Senin–Jumat) yang digunakan pada request ini.
+     */
+    public function getDaysUsedAttribute(): int
+    {
+        if (! $this->start_date || ! $this->end_date) {
+            return 0;
         }
-    });
-}
 
-// Function untuk hitung sisa cuti
+        return CarbonPeriod::create($this->start_date, $this->end_date)
+            ->filter('isWeekday')
+            ->count();
+    }
 
-protected $appends = ['days_used'];
+    // ─── HOOKS ───────────────────────────────────────────────────
 
-public function getDaysUsedAttribute(): int
-{
-    if (!$this->start_date || !$this->end_date) return 0;
-
-    $period = \Carbon\CarbonPeriod::create($this->start_date, $this->end_date);
-    return $period->filter('isWeekday')->count();
-}
-
+    protected static function booted(): void
+    {
+        static::creating(function (self $model) {
+            if (is_null($model->requested_by_user_id) && auth()->check()) {
+                $model->requested_by_user_id = auth()->id();
+            }
+        });
+    }
 }

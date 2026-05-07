@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\LeaveRequest;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
@@ -12,13 +11,15 @@ class Employee extends Model
     protected $fillable = [
         'id_number', 'name', 'position_id', 'department_id', 'section_id',
         'employment_status', 'gender', 'birth_date', 'age', 'generation', 'hire_date',
-        'education', 'performance_score', 'performance_category', 'supervisor_id', 'user_id'
+        'education', 'performance_score', 'performance_category', 'supervisor_id', 'user_id',
     ];
 
     protected $casts = [
         'birth_date' => 'date',
-        'hire_date' => 'date',
+        'hire_date'  => 'date',
     ];
+
+    // ─── RELATIONS ────────────────────────────────────────────────
 
     public function position()
     {
@@ -60,96 +61,87 @@ class Employee extends Model
         return $this->hasMany(PerformanceReview::class);
     }
 
-    // Accessor untuk menghitung usia jika tidak pakai virtual column
-    public function getAgeAttribute()
+    // ─── ACCESSORS ────────────────────────────────────────────────
+
+    /**
+     * Hitung usia dari birth_date secara dinamis.
+     * Tidak disimpan ke DB, hanya computed.
+     */
+    public function getAgeAttribute(): ?int
     {
-        return $this->birth_date ? $this->birth_date->age : null;
+        return $this->birth_date?->age;
     }
 
-    // Mutator untuk mengisi generasi otomatis
-    public function setGenerationAttribute()
+    /**
+     * Hitung generasi berdasarkan usia secara dinamis.
+     * Tidak disimpan ke DB, hanya computed.
+     *
+     * Catatan: kolom 'generation' di $fillable bisa dihapus dari DB
+     * jika kamu memutuskan hanya pakai accessor ini.
+     */
+    public function getGenerationAttribute(): ?string
     {
-        $age = $this->age;
-        if ($age < 25) return 'Gen Z';
-        if ($age <= 35) return 'Milenial';
-        if ($age <= 45) return 'Gen X';
+        $age = $this->birth_date?->age;
+
+        if ($age === null) return null;
+        if ($age < 25)     return 'Gen Z';
+        if ($age <= 35)    return 'Milenial';
+        if ($age <= 45)    return 'Gen X';
+
         return 'Baby Boomers';
     }
 
-    public function getGenerationAttribute()
-{
-    $age = $this->age;
-    if ($age < 25) return 'Gen Z';
-    if ($age <= 35) return 'Milenial';
-    if ($age <= 45) return 'Gen X';
-    return 'Baby Boomers';
-}
+    // ─── LEAVE QUOTA ─────────────────────────────────────────────
 
-// HITUNG SISA CUTI
-/* fungsi jika hari kerja sabtu dan minggu masuk
-public function getRemainingLeaveQuota($leaveTypeId, $year = null)
-{
-    $year = $year ?? Carbon::now()->year;
-    $leaveType = \App\Models\LeaveType::find($leaveTypeId);
-    
-    if (!$leaveType || !$leaveType->quota_per_year) {
-        return null; // tidak terbatas
-    }
-    
-    $usedDays = LeaveRequest::where('employee_id', $this->id)
-        ->where('leave_type_id', $leaveTypeId)
-        ->where('status', 'approved')
-        ->whereYear('start_date', $year)
-        ->get()
-        ->sum(fn($leave) => Carbon::parse($leave->start_date)->diffInDays(Carbon::parse($leave->end_date)) + 1);
-    
-    return $leaveType->quota_per_year - $usedDays;
-}*/
-// hitung cuti jika sabtu dan minggu libur
-// Ganti fungsi getRemainingLeaveQuota yang lama dengan ini:
-public function getRemainingLeaveQuota(int $leaveTypeId, ?int $year = null, ?int $excludeId = null): ?int
-{
-    $year = $year ?? Carbon::now()->year;
-    $leaveType = \App\Models\LeaveType::find($leaveTypeId);
+    /**
+     * Hitung sisa kuota cuti berdasarkan hari kerja (Senin–Jumat).
+     * Parameter $excludeId digunakan saat edit agar request yang sedang
+     * diedit tidak ikut dihitung sebagai "sudah dipakai".
+     */
+    public function getRemainingLeaveQuota(int $leaveTypeId, ?int $year = null, ?int $excludeId = null): ?int
+    {
+        $year      = $year ?? Carbon::now()->year;
+        $leaveType = LeaveType::find($leaveTypeId);
 
-    if (!$leaveType || !$leaveType->quota_per_year) {
-        return null;
+        if (! $leaveType || ! $leaveType->quota_per_year) {
+            return null; // kuota tidak terbatas
+        }
+
+        $usedDays = LeaveRequest::where('employee_id', $this->id)
+            ->where('leave_type_id', $leaveTypeId)
+            ->where('status', 'approved')
+            ->whereYear('start_date', $year)
+            ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
+            ->get()
+            ->sum(function ($leave) {
+                return CarbonPeriod::create($leave->start_date, $leave->end_date)
+                    ->filter('isWeekday')
+                    ->count();
+            });
+
+        return $leaveType->quota_per_year - $usedDays;
     }
 
-    $usedDays = LeaveRequest::where('employee_id', $this->id)
-        ->where('leave_type_id', $leaveTypeId)
-        ->where('status', 'approved')
-        ->whereYear('start_date', $year)
-        ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
-        ->get()
-        ->sum(function ($leave) {
-            $period = CarbonPeriod::create($leave->start_date, $leave->end_date);
-            return $period->filter('isWeekday')->count();
-        });
+    /**
+     * Ambil ringkasan saldo semua jenis cuti yang memiliki kuota.
+     */
+    public function getAllLeaveBalance(?int $year = null): array
+    {
+        $year = $year ?? Carbon::now()->year;
 
-    return $leaveType->quota_per_year - $usedDays;
-}
+        return LeaveType::whereNotNull('quota_per_year')
+            ->get()
+            ->map(function ($leaveType) use ($year) {
+                $remaining = $this->getRemainingLeaveQuota($leaveType->id, $year);
+                $used      = $leaveType->quota_per_year - $remaining;
 
-// Tambah method untuk summary semua jenis cuti
-public function getAllLeaveBalance(?int $year = null): array
-{
-    $year = $year ?? Carbon::now()->year;
-
-    return \App\Models\LeaveType::whereNotNull('quota_per_year')
-        ->get()
-        ->map(function ($leaveType) use ($year) {
-            $remaining = $this->getRemainingLeaveQuota($leaveType->id, $year);
-            $used      = $leaveType->quota_per_year - $remaining;
-
-            return [
-                'leave_type'    => $leaveType->name,
-                'quota'         => $leaveType->quota_per_year,
-                'used'          => $used,
-                'remaining'     => $remaining,
-            ];
-        })
-        ->toArray();
-}
-
-
+                return [
+                    'leave_type' => $leaveType->name,
+                    'quota'      => $leaveType->quota_per_year,
+                    'used'       => $used,
+                    'remaining'  => $remaining,
+                ];
+            })
+            ->toArray();
+    }
 }

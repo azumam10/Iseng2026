@@ -7,6 +7,7 @@ namespace App\Providers\Filament;
 use App\Filament\Admin\Pages\Dashboard;
 use App\Filament\Admin\Resources\Users\UserResource;
 use App\Filament\Admin\Widgets\LatestAccessLogs;
+use App\Filament\Pages\Auth\Register;
 use App\Models\User;
 use Awcodes\Overlook\OverlookPlugin;
 use Awcodes\Overlook\Widgets\OverlookWidget;
@@ -35,7 +36,6 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jacobtims\FilamentLogger\FilamentLoggerPlugin;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Openplain\FilamentShadcnTheme\Color;
-use App\Filament\Pages\Auth\Register;
 
 final class AdminPanelProvider extends PanelProvider
 {
@@ -47,29 +47,22 @@ final class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->authGuard('web')
             ->spa()
-            ->spaUrlExceptions([
-                Dashboard::class,
-                ])
-                // ->registration(Register::class)
-                ->login()
-                ->registration(Register::class)
-->homeUrl(function () {
-    $user = auth()->user();
+            ->spaUrlExceptions([Dashboard::class])
+            ->login()
+            ->registration(Register::class)   // satu saja
+            ->homeUrl(function (): string {
+                $user = auth()->user();
 
-    if ($user->hasRole('hrd')) {
-        return '/admin'; // dashboard HRD
-    }
+                if ($user->hasRole('hrd') || $user->hasRole('kepala_bagian')) {
+                    return '/admin';
+                }
 
-    if ($user->hasRole('kepala_bagian')) {
-        return '/admin';
-    }
+                if ($user->hasRole('employee')) {
+                    return '/admin/leave-requests';
+                }
 
-    if ($user->hasRole('employee')) {
-        return '/admin/leave-requests';
-    }
-
-    return '/admin';
-})
+                return '/admin';
+            })
             ->topbar(false)
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('16rem')
@@ -79,14 +72,12 @@ final class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::adaptive(
                     lightColor: FilamentColor::Blue,
-                    darkColor: FilamentColor::Sky
+                    darkColor: FilamentColor::Sky,
                 ),
             ])
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
-            ->pages([
-                
-            ])
+            ->pages([])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\Filament\Admin\Widgets')
             ->widgets([
                 OverlookWidget::class,
@@ -97,12 +88,8 @@ final class AdminPanelProvider extends PanelProvider
                 \App\Filament\Admin\Widgets\TodayOnLeaveWidget::class,
             ])
             ->navigationGroups([
-                NavigationGroup::make()
-                    ->collapsed(true)
-                    ->label('General'),
-                NavigationGroup::make()
-                    ->collapsed(true)
-                    ->label('Administration'),
+                NavigationGroup::make()->collapsed(true)->label('General'),
+                NavigationGroup::make()->collapsed(true)->label('Administration'),
             ])
             ->plugins([
                 AuthDesignerPlugin::make()
@@ -112,8 +99,8 @@ final class AdminPanelProvider extends PanelProvider
                         ->mediaSize('70%')
                         ->blur(1)
                     )
-
                     ->themeToggle('90%', '50%'),
+
                 BreezyCore::make()
                     ->myProfile(
                         hasAvatars: true,
@@ -121,34 +108,31 @@ final class AdminPanelProvider extends PanelProvider
                         userMenuLabel: 'Profile',
                     )
                     ->enableBrowserSessions(),
+
                 GlobalSearchModalPlugin::make(),
+
                 OverlookPlugin::make()
                     ->sort(2)
                     ->columns([
                         'default' => 4,
-                        'sm' => 2,
-                        'lg' => 4,
-                        'xl' => 6,
+                        'sm'      => 2,
+                        'lg'      => 4,
+                        'xl'      => 6,
                     ])
-                    ->includes([
-                        UserResource::class,
-                    ]),
+                    ->includes([UserResource::class]),
+
                 FilamentShieldPlugin::make()
-                    ->gridColumns([
-                        'default' => 2,
-                    ])
+                    ->gridColumns(['default' => 2])
                     ->sectionColumnSpan(1)
-                    ->checkboxListColumns([
-                        'default' => 2,
-                    ])
-                    ->resourceCheckboxListColumns([
-                        'default' => 2,
-                    ])
+                    ->checkboxListColumns(['default' => 2])
+                    ->resourceCheckboxListColumns(['default' => 2])
                     ->navigationLabel('Roles & Permissions')
                     ->navigationGroup('Administration')
                     ->navigationSort(2)
                     ->navigationIcon(Heroicon::ShieldCheck),
+
                 FilamentLoggerPlugin::make(),
+
                 FilamentDeveloperLoginsPlugin::make()
                     ->enabled(app()->environment('local'))
                     ->switchable(true)
@@ -167,7 +151,6 @@ final class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-              
             ])
             ->viteTheme('resources/css/filament/admin/theme.css');
     }

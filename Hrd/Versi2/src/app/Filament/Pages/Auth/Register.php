@@ -4,10 +4,11 @@ namespace App\Filament\Pages\Auth;
 
 use App\Models\Employee;
 use App\Models\Section;
+use App\Models\User;
 use Filament\Auth\Pages\Register as BaseRegister;
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -39,17 +40,20 @@ class Register extends BaseRegister
                     ->required(),
 
                 TextInput::make('password')
+                    ->label('Password')
                     ->password()
                     ->required(),
 
                 TextInput::make('password_confirmation')
+                    ->label('Konfirmasi Password')
                     ->password()
                     ->required(),
             ]);
     }
 
-    protected function handleRegistration(array $data): \App\Models\User
+    protected function handleRegistration(array $data): User
     {
+        // 1. Cari employee berdasarkan NIP + nama + seksi
         $employee = Employee::where('id_number', $data['id_number'])
             ->whereRaw('LOWER(name) = ?', [strtolower($data['name'])])
             ->where('section_id', $data['section_id'])
@@ -57,39 +61,45 @@ class Register extends BaseRegister
 
         if (! $employee) {
             throw ValidationException::withMessages([
-                'id_number' => 'Data tidak cocok',
+                'id_number' => 'Data karyawan tidak ditemukan. Periksa NIP, nama, dan seksi.',
             ]);
         }
 
+        // 2. Pastikan belum punya akun
         if ($employee->user_id) {
             throw ValidationException::withMessages([
-                'id_number' => 'Sudah punya akun',
+                'id_number' => 'Karyawan ini sudah memiliki akun.',
             ]);
         }
 
-        return DB::transaction(function () use ($data, $employee) {
+        // 3. Buat email dari NIP, cek apakah sudah dipakai
+        $email = $employee->id_number . '@sankei.com';
 
-            $user = \App\Models\User::create([
-                'name' => $employee->name,
-                'email' => $employee->id_number . '@sankei.com',
+        if (User::where('email', $email)->exists()) {
+            throw ValidationException::withMessages([
+                'id_number' => 'Email untuk NIP ini sudah terdaftar. Hubungi administrator.',
+            ]);
+        }
+
+        return DB::transaction(function () use ($data, $employee, $email) {
+            $user = User::create([
+                'name'     => $employee->name,
+                'email'    => $email,
                 'password' => Hash::make($data['password']),
             ]);
 
-            $position = strtolower($employee->position->name ?? '');
+            // Assign role berdasarkan nama jabatan
+            $position = mb_strtolower($employee->position->name ?? '');
 
-            if (str_contains($position, 'kepala')) {
-                $user->assignRole('kepala_bagian');
-            } elseif (str_contains($position, 'hrd')) {
-                $user->assignRole('hrd');
-            } elseif (str_contains($position, 'manajer')) {
-                $user->assignRole('manajer');   
-            } else {
-                $user->assignRole('employee');
-            }
+            $role = match (true) {
+                str_contains($position, 'kepala') => 'kepala_bagian',
+                str_contains($position, 'hrd')    => 'hrd',
+                default                            => 'employee',
+            };
 
-            $employee->update([
-                'user_id' => $user->id
-            ]);
+            $user->assignRole($role);
+
+            $employee->update(['user_id' => $user->id]);
 
             return $user;
         });
