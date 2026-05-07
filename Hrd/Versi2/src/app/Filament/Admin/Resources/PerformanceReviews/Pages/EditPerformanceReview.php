@@ -1,21 +1,39 @@
 <?php
+// ── EditPerformanceReview.php ─────────────────────────────────────
+// app/Filament/Admin/Resources/PerformanceReviews/Pages/EditPerformanceReview.php
 
 namespace App\Filament\Admin\Resources\PerformanceReviews\Pages;
 
 use App\Filament\Admin\Resources\PerformanceReviews\PerformanceReviewResource;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Validation\ValidationException;
 
 class EditPerformanceReview extends EditRecord
 {
     protected static string $resource = PerformanceReviewResource::class;
 
-    protected function getHeaderActions(): array
+    /**
+     * Kepala bagian tidak boleh edit review yang sudah approved/rejected.
+     */
+    protected function authorizeAccess(): void
     {
-        return [
-            ViewAction::make(),
-            DeleteAction::make(),
-        ];
+        parent::authorizeAccess();
+
+        $user   = auth()->user();
+        $record = $this->getRecord();
+
+        if (
+            ! $user->hasRole('hrd') &&
+            $record->status !== 'pending'
+        ) {
+            throw ValidationException::withMessages([
+                'status' => 'Penilaian yang sudah diproses tidak dapat diubah.',
+            ]);
+        }
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

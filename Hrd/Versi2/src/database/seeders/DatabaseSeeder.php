@@ -26,7 +26,9 @@ final class DatabaseSeeder extends Seeder
 
     
      $this->call([
+        RoleSeeder::class,
         SectionPositionDepartmentSeeder::class,
+        PerformanceCriteriaSeeder::class,
     ]);
 
     }

@@ -1,4 +1,6 @@
 <?php
+// ── ListPerformanceReviews.php ────────────────────────────────────
+// app/Filament/Admin/Resources/PerformanceReviews/Pages/ListPerformanceReviews.php
 
 namespace App\Filament\Admin\Resources\PerformanceReviews\Pages;
 
@@ -13,7 +15,8 @@ class ListPerformanceReviews extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->visible(fn () => ! auth()->user()->hasRole('employee')),
         ];
     }
 }

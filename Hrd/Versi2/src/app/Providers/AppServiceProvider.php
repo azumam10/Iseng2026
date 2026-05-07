@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\LeaveRequest;           
+use App\Models\PerformanceReview;           
 use App\Observers\LeaveRequestObserver;
+use App\Observers\PerformanceReviewObserver;
 use App\Policies\ActivityPolicy;
 use Filament\Livewire\Notifications;
 use Filament\Notifications\Notification;
@@ -44,5 +46,6 @@ final class AppServiceProvider extends ServiceProvider
         };
 
          LeaveRequest::observe(LeaveRequestObserver::class);
+         PerformanceReview::observe(PerformanceReviewObserver::class);
     }
 }
