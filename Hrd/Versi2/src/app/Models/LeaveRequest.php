@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class LeaveRequest extends Model
+final class LeaveRequest extends Model
 {
     protected $fillable = [
         'employee_id',
@@ -24,7 +26,7 @@ class LeaveRequest extends Model
 
     protected $casts = [
         'start_date' => 'date',
-        'end_date'   => 'date',
+        'end_date' => 'date',
     ];
 
     protected $appends = ['days_used'];
@@ -93,7 +95,7 @@ class LeaveRequest extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $model) {
+        self::creating(function (self $model) {
             if (is_null($model->requested_by_user_id) && auth()->check()) {
                 $model->requested_by_user_id = auth()->id();
             }

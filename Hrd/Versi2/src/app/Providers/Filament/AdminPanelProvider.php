@@ -44,7 +44,7 @@ final class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('admin')
+            ->path('hris')
             ->authGuard('web')
             ->spa()
             ->spaUrlExceptions([Dashboard::class])
@@ -54,14 +54,14 @@ final class AdminPanelProvider extends PanelProvider
                 $user = auth()->user();
 
                 if ($user->hasRole('hrd') || $user->hasRole('kepala_bagian')) {
-                    return '/admin';
+                    return '/hris';
                 }
 
                 if ($user->hasRole('employee')) {
-                    return '/admin/leave-requests';
+                    return '/hris/leave-requests';
                 }
 
-                return '/admin';
+                return '/hris';
             })
             ->topbar(false)
             ->sidebarCollapsibleOnDesktop()
@@ -86,6 +86,7 @@ final class AdminPanelProvider extends PanelProvider
                 \App\Filament\Admin\Widgets\LeaveRequestStats::class,
                 \App\Filament\Admin\Widgets\LeaveBalanceSummaryWidget::class,
                 \App\Filament\Admin\Widgets\TodayOnLeaveWidget::class,
+                \App\Filament\Admin\Widgets\TopPerformanceWidget::class,
             ])
             ->navigationGroups([
                 NavigationGroup::make()->collapsed(true)->label('General'),
@@ -115,9 +116,9 @@ final class AdminPanelProvider extends PanelProvider
                     ->sort(2)
                     ->columns([
                         'default' => 4,
-                        'sm'      => 2,
-                        'lg'      => 4,
-                        'xl'      => 6,
+                        'sm' => 2,
+                        'lg' => 4,
+                        'xl' => 6,
                     ])
                     ->includes([UserResource::class]),
 

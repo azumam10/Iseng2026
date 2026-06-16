@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class PerformanceCriteria extends Model
+final class PerformanceCriteria extends Model
 {
     protected $table = 'performance_criteria';
 
@@ -17,7 +19,7 @@ class PerformanceCriteria extends Model
     ];
 
     protected $casts = [
-        'weight'    => 'decimal:2',
+        'weight' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 

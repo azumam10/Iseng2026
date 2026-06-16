@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\Employees\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
@@ -10,8 +12,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\IconPosition;
 
-
-class EmployeeInfolist
+final class EmployeeInfolist
 {
     public static function configure(Schema $schema): Schema
     {
@@ -46,11 +47,11 @@ class EmployeeInfolist
                                         ->label('Status Kepegawaian')
                                         ->badge()
                                         ->color(fn (string $state): string => match ($state) {
-                                            'PKWTT'    => 'success',
-                                            'PKWT'     => 'info',
-                                            'HARIAN'   => 'warning',
+                                            'PKWTT' => 'success',
+                                            'PKWT' => 'info',
+                                            'HARIAN' => 'warning',
                                             'DIREKTUR' => 'danger',
-                                            default    => 'gray',
+                                            default => 'gray',
                                         }),
 
                                     TextEntry::make('gender')
@@ -122,24 +123,24 @@ class EmployeeInfolist
                             ->label('Tanggal Lahir')
                             ->icon('heroicon-m-cake')
                             ->iconPosition(IconPosition::Before)
-                            ->date('d MMMM Y'),
+                            ->date('d M Y'),
 
                         TextEntry::make('age')
                             ->label('Usia')
                             ->icon('heroicon-m-clock')
                             ->iconPosition(IconPosition::Before)
-                            ->formatStateUsing(fn ($state) => $state . ' tahun')
+                            ->formatStateUsing(fn ($state) => $state.' tahun')
                             ->placeholder('-'),
 
                         TextEntry::make('generation')
                             ->label('Generasi')
                             ->badge()
                             ->color(fn (?string $state): string => match ($state) {
-                                'Gen Z'        => 'info',
-                                'Milenial'     => 'success',
-                                'Gen X'        => 'warning',
+                                'Gen Z' => 'info',
+                                'Milenial' => 'success',
+                                'Gen X' => 'warning',
                                 'Baby Boomers' => 'danger',
-                                default        => 'gray',
+                                default => 'gray',
                             })
                             ->placeholder('-'),
 
@@ -171,14 +172,14 @@ class EmployeeInfolist
                             ->badge()
                             ->color(fn (?string $state): string => match ($state) {
                                 'High' => 'success',
-                                'Med'  => 'warning',
-                                'Low'  => 'danger',
+                                'Med' => 'warning',
+                                'Low' => 'danger',
                                 default => 'gray',
                             })
                             ->formatStateUsing(fn (?string $state): string => match ($state) {
                                 'High' => '⭐ High Performer',
-                                'Med'  => '📊 Medium Performer',
-                                'Low'  => '⚠️ Low Performer',
+                                'Med' => '📊 Medium Performer',
+                                'Low' => '⚠️ Low Performer',
                                 default => '-',
                             })
                             ->placeholder('-'),

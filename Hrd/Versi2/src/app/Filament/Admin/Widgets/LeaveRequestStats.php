@@ -1,22 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Widgets;
 
-use App\Models\LeaveRequest;
 use App\Filament\Admin\Resources\LeaveRequests\LeaveRequestResource;
+use App\Models\LeaveRequest;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
 
-class LeaveRequestStats extends BaseWidget
+final class LeaveRequestStats extends BaseWidget
 {
+    public static function canView(): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole(['hrd', 'admin']);
+    }
+
     protected function getStats(): array
     {
         $year = Carbon::now()->year;
 
         $total = LeaveRequest::whereYear('created_at', $year)->count();
 
-        $approved = LeaveRequest::approved()    
+        $approved = LeaveRequest::approved()
             ->whereYear('created_at', $year)
             ->count();
 
@@ -55,10 +62,5 @@ class LeaveRequestStats extends BaseWidget
                 ->color('danger')
                 ->url($url),
         ];
-    }
-
-    public static function canView(): bool
-    {
-        return auth()->check() && auth()->user()->hasAnyRole(['hrd', 'admin']);
     }
 }

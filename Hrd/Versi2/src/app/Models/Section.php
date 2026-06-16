@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Section extends Model
+final class Section extends Model
 {
     protected $fillable = ['name', 'department_id'];
 

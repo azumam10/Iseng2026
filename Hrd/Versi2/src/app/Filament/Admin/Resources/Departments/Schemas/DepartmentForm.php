@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\Departments\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
-use Illuminate\Validation\Rule;
 
-class DepartmentForm
+final class DepartmentForm
 {
     public static function configure(Schema $schema): Schema
     {

@@ -1,15 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\Employees\Schemas;
 
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 
-class EmployeeForm
+final class EmployeeForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -46,12 +47,12 @@ class EmployeeForm
                         Select::make('education')
                             ->label('Pendidikan Terakhir')
                             ->options([
-                                'SD'  => 'SD',
+                                'SD' => 'SD',
                                 'SMP' => 'SMP',
                                 'SMA' => 'SMA / SMK',
-                                'D3'  => 'D3',
-                                'S1'  => 'S1',
-                                'S2'  => 'S2',
+                                'D3' => 'D3',
+                                'S1' => 'S1',
+                                'S2' => 'S2',
                             ])
                             ->placeholder('Pilih pendidikan')
                             ->nullable(),
@@ -72,9 +73,9 @@ class EmployeeForm
                         Select::make('employment_status')
                             ->label('Status Kepegawaian')
                             ->options([
-                                'PKWTT'    => 'PKWTT (Tetap)',
-                                'PKWT'     => 'PKWT (Kontrak)',
-                                'HARIAN'   => 'Harian',
+                                'PKWTT' => 'PKWTT (Tetap)',
+                                'PKWT' => 'PKWT (Kontrak)',
+                                'HARIAN' => 'Harian',
                                 'DIREKTUR' => 'Direktur',
                             ])
                             ->default('PKWT')
@@ -115,7 +116,18 @@ class EmployeeForm
 
                         Select::make('supervisor_id')
                             ->label('Atasan Langsung')
-                            ->relationship('supervisor', 'name')
+                            ->options(function () {
+                                return \App\Models\Employee::query()
+                                    ->whereHas('position', function ($query) {
+                                        $query->whereIn('name', [
+                                            'Kepala Bagian',
+                                            'HRGA',
+                                            'Direktur Utama',
+                                        ]);
+                                    })
+                                    ->orderBy('name')
+                                    ->pluck('name', 'id');
+                            })
                             ->searchable()
                             ->preload()
                             ->nullable()
@@ -142,8 +154,8 @@ class EmployeeForm
                         Select::make('performance_category')
                             ->label('Kategori Performa')
                             ->options([
-                                'Low'  => '⚠️ Low Performer',
-                                'Med'  => '📊 Medium Performer',
+                                'Low' => '⚠️ Low Performer',
+                                'Med' => '📊 Medium Performer',
                                 'High' => '⭐ High Performer',
                             ])
                             ->placeholder('Pilih kategori')

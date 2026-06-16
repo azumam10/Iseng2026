@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Observers;
 
 use App\Models\Employee;
@@ -7,7 +9,7 @@ use App\Models\PerformanceReview;
 use App\Models\User;
 use Filament\Notifications\Notification;
 
-class PerformanceReviewObserver
+final class PerformanceReviewObserver
 {
     /**
      * Setelah review dibuat.

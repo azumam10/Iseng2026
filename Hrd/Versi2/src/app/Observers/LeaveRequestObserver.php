@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Observers;
 
 use App\Models\Employee;
@@ -11,7 +13,7 @@ use Carbon\CarbonPeriod;
 use Filament\Notifications\Notification;
 use Illuminate\Validation\ValidationException;
 
-class LeaveRequestObserver
+final class LeaveRequestObserver
 {
     // ─── CREATING ─────────────────────────────────────────────────
 
@@ -76,7 +78,7 @@ class LeaveRequestObserver
         match ($leaveRequest->status) {
             'approved' => $this->notifyApproved($leaveRequest),
             'rejected' => $this->notifyRejected($leaveRequest),
-            default    => null,
+            default => null,
         };
     }
 
@@ -92,7 +94,7 @@ class LeaveRequestObserver
      */
     private function checkQuota(LeaveRequest $leaveRequest, bool $strict = true): void
     {
-        $employee  = Employee::find($leaveRequest->employee_id);
+        $employee = Employee::find($leaveRequest->employee_id);
         $leaveType = LeaveType::find($leaveRequest->leave_type_id);
 
         if (! $employee || ! $leaveType || ! $leaveType->quota_per_year) {
@@ -103,7 +105,7 @@ class LeaveRequestObserver
             ->filter('isWeekday')
             ->count();
 
-        $year      = Carbon::parse($leaveRequest->start_date)->year;
+        $year = Carbon::parse($leaveRequest->start_date)->year;
         $remaining = $employee->getRemainingLeaveQuota(
             $leaveType->id,
             $year,
@@ -126,7 +128,7 @@ class LeaveRequestObserver
         if (! $strict && $remaining <= 0) {
             Notification::make()
                 ->title('Kuota Cuti Habis')
-                ->body("Karyawan tidak memiliki sisa kuota cuti untuk jenis ini.")
+                ->body('Karyawan tidak memiliki sisa kuota cuti untuk jenis ini.')
                 ->danger()
                 ->persistent()
                 ->send();
@@ -147,7 +149,7 @@ class LeaveRequestObserver
         $employee = $leaveRequest->employee()->with('user')->first();
 
         $title = 'Cuti Disetujui';
-        $body  = "Pengajuan cuti {$employee->name} ({$leaveRequest->start_date->format('d/m/Y')} – {$leaveRequest->end_date->format('d/m/Y')}) telah disetujui.";
+        $body = "Pengajuan cuti {$employee->name} ({$leaveRequest->start_date->format('d/m/Y')} – {$leaveRequest->end_date->format('d/m/Y')}) telah disetujui.";
 
         // Notifikasi ke kepala bagian yang menginput
         $kabag = User::find($leaveRequest->requested_by_user_id);
@@ -182,7 +184,7 @@ class LeaveRequestObserver
         $employee = $leaveRequest->employee()->with('user')->first();
 
         $title = 'Cuti Ditolak';
-        $body  = "Pengajuan cuti {$employee->name} ({$leaveRequest->start_date->format('d/m/Y')} – {$leaveRequest->end_date->format('d/m/Y')}) ditolak.";
+        $body = "Pengajuan cuti {$employee->name} ({$leaveRequest->start_date->format('d/m/Y')} – {$leaveRequest->end_date->format('d/m/Y')}) ditolak.";
 
         // Notifikasi ke kepala bagian yang menginput
         $kabag = User::find($leaveRequest->requested_by_user_id);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\LeaveTypes;
 
 use App\Filament\Admin\Resources\LeaveTypes\Pages\CreateLeaveType;
@@ -13,22 +15,22 @@ use App\Models\LeaveType;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class LeaveTypeResource extends Resource
+final class LeaveTypeResource extends Resource
 {
     protected static ?string $model = LeaveType::class;
 
     protected static ?string $navigationLabel = 'Jenis Cuti';
+
     protected static ?string $modelLabel = 'Jenis Cuti';
+
     protected static ?string $pluralModelLabel = 'Jenis Cuti';
 
-   
     protected static string|UnitEnum|null $navigationGroup = 'Management Cuti';
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-s-clipboard-document-list';
 
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-s-clipboard-document-list';
 
     public static function form(Schema $schema): Schema
     {

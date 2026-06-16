@@ -1,20 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\PerformanceReviews\Schemas;
 
 use App\Models\Employee;
 use App\Models\PerformanceCriteria;
-use App\Models\PerformanceReview;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 
-class PerformanceReviewForm
+final class PerformanceReviewForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -30,7 +30,7 @@ class PerformanceReviewForm
 
                         $user = auth()->user();
 
-                        if ($user->hasRole(['hrd','super_admin'])) {
+                        if ($user->hasRole(['hrd', 'super_admin'])) {
                             return Employee::orderBy('name')
                                 ->pluck('name', 'id')
                                 ->toArray();
@@ -38,7 +38,7 @@ class PerformanceReviewForm
 
                         $employee = $user->employee;
 
-                        if (!$employee) {
+                        if (! $employee) {
                             return [];
                         }
 
@@ -112,7 +112,7 @@ class PerformanceReviewForm
 
                 Select::make('status')
                     ->label('Status')
-                    ->visible(fn () => auth()->user()->hasRole(['hrd','super_admin']))
+                    ->visible(fn () => auth()->user()->hasRole(['hrd', 'super_admin']))
                     ->options([
                         'pending' => 'Pending',
                         'approved' => 'Approved',
@@ -123,8 +123,7 @@ class PerformanceReviewForm
                 Textarea::make('rejection_reason')
                     ->label('Alasan Penolakan')
                     ->rows(3)
-                    ->visible(fn ($get) =>
-                        $get('status') === 'rejected'
+                    ->visible(fn ($get) => $get('status') === 'rejected'
                     )
                     ->columnSpanFull(),
 

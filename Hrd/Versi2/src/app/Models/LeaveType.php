@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class LeaveType extends Model
+final class LeaveType extends Model
 {
     protected $fillable = ['name', 'description', 'quota_per_year'];
 

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Database\Eloquent\Model;
 
-class Employee extends Model
+final class Employee extends Model
 {
     protected $fillable = [
         'id_number', 'name', 'position_id', 'department_id', 'section_id',
@@ -16,7 +18,7 @@ class Employee extends Model
 
     protected $casts = [
         'birth_date' => 'date',
-        'hire_date'  => 'date',
+        'hire_date' => 'date',
     ];
 
     // ─── RELATIONS ────────────────────────────────────────────────
@@ -38,12 +40,12 @@ class Employee extends Model
 
     public function supervisor()
     {
-        return $this->belongsTo(Employee::class, 'supervisor_id');
+        return $this->belongsTo(self::class, 'supervisor_id');
     }
 
     public function subordinates()
     {
-        return $this->hasMany(Employee::class, 'supervisor_id');
+        return $this->hasMany(self::class, 'supervisor_id');
     }
 
     public function user()
@@ -83,10 +85,18 @@ class Employee extends Model
     {
         $age = $this->birth_date?->age;
 
-        if ($age === null) return null;
-        if ($age < 25)     return 'Gen Z';
-        if ($age <= 35)    return 'Milenial';
-        if ($age <= 45)    return 'Gen X';
+        if ($age === null) {
+            return null;
+        }
+        if ($age < 25) {
+            return 'Gen Z';
+        }
+        if ($age <= 35) {
+            return 'Milenial';
+        }
+        if ($age <= 45) {
+            return 'Gen X';
+        }
 
         return 'Baby Boomers';
     }
@@ -100,7 +110,7 @@ class Employee extends Model
      */
     public function getRemainingLeaveQuota(int $leaveTypeId, ?int $year = null, ?int $excludeId = null): ?int
     {
-        $year      = $year ?? Carbon::now()->year;
+        $year = $year ?? Carbon::now()->year;
         $leaveType = LeaveType::find($leaveTypeId);
 
         if (! $leaveType || ! $leaveType->quota_per_year) {
@@ -133,13 +143,13 @@ class Employee extends Model
             ->get()
             ->map(function ($leaveType) use ($year) {
                 $remaining = $this->getRemainingLeaveQuota($leaveType->id, $year);
-                $used      = $leaveType->quota_per_year - $remaining;
+                $used = $leaveType->quota_per_year - $remaining;
 
                 return [
                     'leave_type' => $leaveType->name,
-                    'quota'      => $leaveType->quota_per_year,
-                    'used'       => $used,
-                    'remaining'  => $remaining,
+                    'quota' => $leaveType->quota_per_year,
+                    'used' => $used,
+                    'remaining' => $remaining,
                 ];
             })
             ->toArray();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\LeaveRequests;
 
 use App\Filament\Admin\Resources\LeaveRequests\Pages\CreateLeaveRequest;
@@ -13,18 +15,18 @@ use App\Models\LeaveRequest;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
-class LeaveRequestResource extends Resource
+final class LeaveRequestResource extends Resource
 {
     protected static ?string $model = LeaveRequest::class;
 
-    
     protected static ?string $navigationLabel = 'Permintaan Cuti';
+
     protected static ?string $modelLabel = 'Permintaan Cuti';
+
     protected static ?string $pluralModelLabel = 'Permintaan Cuti';
 
     protected static string|UnitEnum|null $navigationGroup = 'Management Cuti';
@@ -53,40 +55,37 @@ class LeaveRequestResource extends Resource
         ];
     }
 
-    
+    public static function getEloquentQuery(): Builder
+    {
+        $user = auth()->user();
 
-public static function getEloquentQuery(): Builder
-{
-    $user = auth()->user();
+        // 🔥 SUPER ADMIN & HRD → FULL ACCESS
+        if ($user->hasAnyRole(['super_admin', 'hrd'])) {
+            return parent::getEloquentQuery();
+        }
 
-    // 🔥 SUPER ADMIN & HRD → FULL ACCESS
-    if ($user->hasAnyRole(['super_admin', 'hrd'])) {
-        return parent::getEloquentQuery();
+        // 🔥 KEPALA BAGIAN → bawahan
+        if ($user->hasRole('kepala_bagian') && $user->employee) {
+            return parent::getEloquentQuery()
+                ->whereHas('employee', fn ($q) => $q->where('supervisor_id', $user->employee->id)
+                );
+        }
+
+        // 🔥 EMPLOYEE → diri sendiri
+        if ($user->hasRole('employee') && $user->employee) {
+            return parent::getEloquentQuery()
+                ->where('employee_id', $user->employee->id);
+        }
+
+        // 🔥 fallback biar ga kosong total
+        return parent::getEloquentQuery()->whereRaw('1 = 0');
     }
 
-    // 🔥 KEPALA BAGIAN → bawahan
-    if ($user->hasRole('kepala_bagian') && $user->employee) {
-        return parent::getEloquentQuery()
-            ->whereHas('employee', fn ($q) =>
-                $q->where('supervisor_id', $user->employee->id)
-            );
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasAnyRole(['kepala_bagian', 'hrd', 'super_admin']);
     }
 
-    // 🔥 EMPLOYEE → diri sendiri
-    if ($user->hasRole('employee') && $user->employee) {
-        return parent::getEloquentQuery()
-            ->where('employee_id', $user->employee->id);
-    }
-
-    // 🔥 fallback biar ga kosong total
-    return parent::getEloquentQuery()->whereRaw('1 = 0');
-}
-
-
-public static function canCreate(): bool
-{
-   return auth()->user()->hasAnyRole(['kepala_bagian', 'hrd', 'super_admin']);
-}
     public static function getPages(): array
     {
         return [

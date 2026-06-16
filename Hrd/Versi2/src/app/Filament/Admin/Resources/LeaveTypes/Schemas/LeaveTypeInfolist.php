@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\LeaveTypes\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
-class LeaveTypeInfolist
+final class LeaveTypeInfolist
 {
     public static function configure(Schema $schema): Schema
     {

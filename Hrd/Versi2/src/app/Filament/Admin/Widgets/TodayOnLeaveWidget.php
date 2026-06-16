@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\LeaveRequest;
@@ -8,10 +10,12 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
-class TodayOnLeaveWidget extends BaseWidget
+final class TodayOnLeaveWidget extends BaseWidget
 {
-    protected static ?string $heading   = '🗓️ Karyawan Cuti Hari Ini';
-    protected static ?int    $sort      = 4;
+    protected static ?string $heading = '🗓️ Karyawan Cuti Hari Ini';
+
+    protected static ?int $sort = 4;
+
     protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
@@ -60,12 +64,14 @@ class TodayOnLeaveWidget extends BaseWidget
                             Carbon::parse($record->end_date),
                             false
                         );
-                        if ($daysLeft === 0) return '🔄 Hari ini';
+                        if ($daysLeft === 0) {
+                            return '🔄 Hari ini';
+                        }
+
                         return "dalam {$daysLeft} hari";
                     })
                     ->badge()
-                    ->color(fn(string $state): string =>
-                        str_contains($state, 'Hari ini') ? 'success' : 'gray'
+                    ->color(fn (string $state): string => str_contains($state, 'Hari ini') ? 'success' : 'gray'
                     ),
 
                 TextColumn::make('hrdApprovedBy.name')

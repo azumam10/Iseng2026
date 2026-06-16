@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\Departments\Tables;
 
 use Filament\Actions\BulkActionGroup;
@@ -9,7 +11,7 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class DepartmentsTable
+final class DepartmentsTable
 {
     public static function configure(Table $table): Table
     {
@@ -26,11 +28,9 @@ class DepartmentsTable
                     ->searchable()
                     ->sortable()
                     ->badge()
-                    ->color(fn (?string $state): string => 
-                        $state === null ? 'gray' : 'primary'
+                    ->color(fn (?string $state): string => $state === null ? 'gray' : 'primary'
                     )
-                    ->formatStateUsing(fn (?string $state): string => 
-                        $state ?? '-'
+                    ->formatStateUsing(fn (?string $state): string => $state ?? '-'
                     ),
 
             ])

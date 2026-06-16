@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Models\LeaveRequest;           
-use App\Models\PerformanceReview;           
+use App\Models\LeaveRequest;
+use App\Models\PerformanceReview;
+use App\Models\Setting;
 use App\Observers\LeaveRequestObserver;
 use App\Observers\PerformanceReviewObserver;
 use App\Policies\ActivityPolicy;
@@ -15,6 +16,7 @@ use Filament\Pages\Page;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\VerticalAlignment;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\Models\Activity;
@@ -45,7 +47,8 @@ final class AppServiceProvider extends ServiceProvider
                 ->send();
         };
 
-         LeaveRequest::observe(LeaveRequestObserver::class);
-         PerformanceReview::observe(PerformanceReviewObserver::class);
+        LeaveRequest::observe(LeaveRequestObserver::class);
+        PerformanceReview::observe(PerformanceReviewObserver::class);
+        View::share('setting', Setting::first());
     }
 }

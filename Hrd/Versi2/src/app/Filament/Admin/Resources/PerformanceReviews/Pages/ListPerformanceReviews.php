@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // ── ListPerformanceReviews.php ────────────────────────────────────
 // app/Filament/Admin/Resources/PerformanceReviews/Pages/ListPerformanceReviews.php
 
@@ -8,7 +10,7 @@ use App\Filament\Admin\Resources\PerformanceReviews\PerformanceReviewResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
-class ListPerformanceReviews extends ListRecords
+final class ListPerformanceReviews extends ListRecords
 {
     protected static string $resource = PerformanceReviewResource::class;
 

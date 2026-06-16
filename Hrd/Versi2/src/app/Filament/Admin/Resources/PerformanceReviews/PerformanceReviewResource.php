@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\PerformanceReviews;
 
 use App\Filament\Admin\Resources\PerformanceReviews\Pages\CreatePerformanceReview;
@@ -16,7 +18,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
-class PerformanceReviewResource extends Resource
+final class PerformanceReviewResource extends Resource
 {
     protected static ?string $model = PerformanceReview::class;
 
@@ -41,30 +43,30 @@ class PerformanceReviewResource extends Resource
     }
 
     public static function getEloquentQuery(): Builder
-{
-    $query = parent::getEloquentQuery()
-        ->with([
-            'employee',
-            'reviewer',
-            'details.criteria',
-        ]);
+    {
+        $query = parent::getEloquentQuery()
+            ->with([
+                'employee',
+                'reviewer',
+                'details.criteria',
+            ]);
 
-    $user = auth()->user();
+        $user = auth()->user();
 
-    if ($user->hasAnyRole(['super_admin', 'hrd'])) {
-        return $query;
+        if ($user->hasAnyRole(['super_admin', 'hrd'])) {
+            return $query;
+        }
+
+        if ($user->hasRole('kepala_bagian')) {
+            return $query->where('reviewer_id', $user->id);
+        }
+
+        if ($user->hasRole('employee')) {
+            return $query->where('employee_id', $user->employee?->id);
+        }
+
+        return $query->whereRaw('1 = 0');
     }
-
-    if ($user->hasRole('kepala_bagian')) {
-        return $query->where('reviewer_id', $user->id);
-    }
-
-    if ($user->hasRole('employee')) {
-        return $query->where('employee_id', $user->employee?->id);
-    }
-
-    return $query->whereRaw('1 = 0');
-}
 
     public static function canCreate(): bool
     {

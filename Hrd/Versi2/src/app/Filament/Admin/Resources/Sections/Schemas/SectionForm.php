@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\Sections\Schemas;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
-class SectionForm
+final class SectionForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -22,7 +24,7 @@ class SectionForm
 
                         Select::make('department_id')
                             ->label('Department')
-                            ->relationship('department', 'name') 
+                            ->relationship('department', 'name')
                             ->searchable()
                             ->preload()
                             ->required(),

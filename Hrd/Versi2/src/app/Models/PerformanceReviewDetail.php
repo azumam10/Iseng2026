@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PerformanceReviewDetail extends Model
+final class PerformanceReviewDetail extends Model
 {
     protected $fillable = [
         'performance_review_id',

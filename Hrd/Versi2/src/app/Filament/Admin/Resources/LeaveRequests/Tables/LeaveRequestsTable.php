@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\LeaveRequests\Tables;
 
 use Filament\Actions\Action;
-use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Textarea;
 
-class LeaveRequestsTable
+final class LeaveRequestsTable
 {
     public static function configure(Table $table): Table
     {
@@ -49,37 +51,39 @@ class LeaveRequestsTable
                 TextColumn::make('document')
                     ->label('Dokumen')
                     ->formatStateUsing(fn ($state) => $state ? '📄 Lihat' : '-')
-                    ->url(fn ($record) => $record->document ? asset('storage/' . $record->document) : null)
+                    ->url(fn ($record) => $record->document ? asset('storage/'.$record->document) : null)
                     ->openUrlInNewTab()
                     ->icon('heroicon-o-document-text'),
-                    
-                    TextColumn::make('days_used')
+
+                TextColumn::make('days_used')
                     ->label('Hari Kerja')
                     ->badge()
                     ->color('info')
                     ->suffix(' hari')
-                    ->getStateUsing(fn($record) => $record->days_used),
-                    
+                    ->getStateUsing(fn ($record) => $record->days_used),
+
                 TextColumn::make('sisa_kuota')
                     ->label('Sisa Kuota')
                     ->getStateUsing(function ($record) {
                         $remaining = $record->employee?->getRemainingLeaveQuota(
                             $record->leave_type_id,
                             $record->start_date?->year
-                            );
-                            
-                            if ($remaining === null) return 'Tak terbatas';
-                            return $remaining . ' hari';
-                            })
-                            ->badge()
-                            ->color(fn($state) => match(true) {
-                                str_starts_with($state, '0') => 'danger',
-                                (int) $state <= 3            => 'warning',
-                                default                      => 'success',
-                                }),
+                        );
 
+                        if ($remaining === null) {
+                            return 'Tak terbatas';
+                        }
 
-                    ])
+                        return $remaining.' hari';
+                    })
+                    ->badge()
+                    ->color(fn ($state) => match (true) {
+                        str_starts_with($state, '0') => 'danger',
+                        (int) $state <= 3 => 'warning',
+                        default => 'success',
+                    }),
+
+            ])
             ->actions([
                 ViewAction::make(),
 
@@ -88,9 +92,8 @@ class LeaveRequestsTable
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        auth()->user()->hasRole('hrd') && 
-                        $record->status === 'pending'
+                    ->visible(fn ($record) => auth()->user()->hasRole('hrd') &&
+                    $record->status === 'pending'
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -105,8 +108,7 @@ class LeaveRequestsTable
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        auth()->user()->hasRole('hrd') && 
+                    ->visible(fn ($record) => auth()->user()->hasRole('hrd') &&
                         $record->status === 'pending'
                     )
                     ->form([

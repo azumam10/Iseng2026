@@ -24,13 +24,11 @@ final class DatabaseSeeder extends Seeder
             'email' => 'admin@admin.com',
         ]);
 
-    
-     $this->call([
-        RoleSeeder::class,
-        SectionPositionDepartmentSeeder::class,
-        PerformanceCriteriaSeeder::class,
-    ]);
+        $this->call([
+            RoleSeeder::class,
+            SectionPositionDepartmentSeeder::class,
+            PerformanceCriteriaSeeder::class,
+        ]);
 
     }
-    
 }

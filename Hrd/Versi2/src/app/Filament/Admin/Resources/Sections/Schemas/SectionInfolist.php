@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\Sections\Schemas;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
-class SectionInfolist
+final class SectionInfolist
 {
     public static function configure(Schema $schema): Schema
     {
@@ -17,7 +19,7 @@ class SectionInfolist
                         TextEntry::make('name')
                             ->label('Nama Section'),
 
-                        TextEntry::make('department.name') 
+                        TextEntry::make('department.name')
                             ->label('Department')
                             ->badge()
                             ->color('primary'),

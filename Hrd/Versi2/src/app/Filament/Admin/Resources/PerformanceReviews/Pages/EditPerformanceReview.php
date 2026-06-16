@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // ── EditPerformanceReview.php ─────────────────────────────────────
 // app/Filament/Admin/Resources/PerformanceReviews/Pages/EditPerformanceReview.php
 
@@ -8,7 +10,7 @@ use App\Filament\Admin\Resources\PerformanceReviews\PerformanceReviewResource;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Validation\ValidationException;
 
-class EditPerformanceReview extends EditRecord
+final class EditPerformanceReview extends EditRecord
 {
     protected static string $resource = PerformanceReviewResource::class;
 
@@ -19,7 +21,7 @@ class EditPerformanceReview extends EditRecord
     {
         parent::authorizeAccess();
 
-        $user   = auth()->user();
+        $user = auth()->user();
         $record = $this->getRecord();
 
         if (

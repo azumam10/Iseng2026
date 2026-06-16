@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Pages\Auth;
 
 use App\Models\Employee;
@@ -13,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-class Register extends BaseRegister
+final class Register extends BaseRegister
 {
     public function form(Schema $schema): Schema
     {
@@ -33,7 +35,7 @@ class Register extends BaseRegister
                         Section::with('department')
                             ->get()
                             ->mapWithKeys(fn ($s) => [
-                                $s->id => $s->department->name . ' - ' . $s->name,
+                                $s->id => $s->department->name.' - '.$s->name,
                             ])
                     )
                     ->searchable()
@@ -55,7 +57,7 @@ class Register extends BaseRegister
     {
         // 1. Cari employee berdasarkan NIP + nama + seksi
         $employee = Employee::where('id_number', $data['id_number'])
-            ->whereRaw('LOWER(name) = ?', [strtolower($data['name'])])
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($data['name'])])
             ->where('section_id', $data['section_id'])
             ->first();
 
@@ -73,7 +75,7 @@ class Register extends BaseRegister
         }
 
         // 3. Buat email dari NIP, cek apakah sudah dipakai
-        $email = $employee->id_number . '@sankei.com';
+        $email = $employee->id_number.'@sankei.com';
 
         if (User::where('email', $email)->exists()) {
             throw ValidationException::withMessages([
@@ -83,8 +85,8 @@ class Register extends BaseRegister
 
         return DB::transaction(function () use ($data, $employee, $email) {
             $user = User::create([
-                'name'     => $employee->name,
-                'email'    => $email,
+                'name' => $employee->name,
+                'email' => $email,
                 'password' => Hash::make($data['password']),
             ]);
 
@@ -93,8 +95,8 @@ class Register extends BaseRegister
 
             $role = match (true) {
                 str_contains($position, 'kepala') => 'kepala_bagian',
-                str_contains($position, 'hrd')    => 'hrd',
-                default                            => 'employee',
+                str_contains($position, 'hrd') => 'hrd',
+                default => 'employee',
             };
 
             $user->assignRole($role);

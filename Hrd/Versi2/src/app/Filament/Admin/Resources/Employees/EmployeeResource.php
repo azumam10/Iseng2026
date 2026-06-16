@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\Employees;
 
 use App\Filament\Admin\Resources\Employees\Pages\CreateEmployee;
@@ -13,22 +15,21 @@ use App\Models\Employee;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
-class EmployeeResource extends Resource
+final class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
 
-     protected static string|UnitEnum|null $navigationGroup = 'Management karyawan';
-
+    protected static string|UnitEnum|null $navigationGroup = 'Management karyawan';
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $label = 'Karyawan';
-    protected static ?string $pluralLabel = 'Karyawan';
 
+    protected static ?string $label = 'Karyawan';
+
+    protected static ?string $pluralLabel = 'Karyawan';
 
     public static function form(Schema $schema): Schema
     {
@@ -52,44 +53,45 @@ class EmployeeResource extends Resource
         ];
     }
 
- 
-public static function getEloquentQuery(): Builder
-{
-    $query = parent::getEloquentQuery();
-    $user = auth()->user();
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = auth()->user();
 
-    // Super admin lihat semua
-    if ($user->hasRole('super_admin')) {
-        return $query;
-    }
-
-    // HRD lihat semua
-    if ($user->hasRole('hrd')) {
-        return $query;
-    }
-
-    // Manajer lihat semua (atau dibatasi nanti)
-    if ($user->hasRole('manajer')) {
-        return $query;
-    }
-
-    // Kepala bagian: lihat bawahan + dirinya sendiri
-    if ($user->hasRole('kepala_bagian')) {
-        $employee = $user->employee;
-        if ($employee) {
-            $subordinateIds = $employee->subordinates()->pluck('id');
-            return $query->whereIn('id', $subordinateIds->push($employee->id));
+        // Super admin lihat semua
+        if ($user->hasRole('super_admin')) {
+            return $query;
         }
-        return $query->whereRaw('0=1'); // tidak ada data
-    }
 
-    // Karyawan biasa: hanya lihat dirinya sendiri
-    if ($user->hasRole('karyawan')) {
-        return $query->where('user_id', $user->id);
-    }
+        // HRD lihat semua
+        if ($user->hasRole('hrd')) {
+            return $query;
+        }
 
-    return $query->whereRaw('0=1');
-}
+        // Manajer lihat semua (atau dibatasi nanti)
+        if ($user->hasRole('manajer')) {
+            return $query;
+        }
+
+        // Kepala bagian: lihat bawahan + dirinya sendiri
+        if ($user->hasRole('kepala_bagian')) {
+            $employee = $user->employee;
+            if ($employee) {
+                $subordinateIds = $employee->subordinates()->pluck('id');
+
+                return $query->whereIn('id', $subordinateIds->push($employee->id));
+            }
+
+            return $query->whereRaw('0=1'); // tidak ada data
+        }
+
+        // Karyawan biasa: hanya lihat dirinya sendiri
+        if ($user->hasRole('karyawan')) {
+            return $query->where('user_id', $user->id);
+        }
+
+        return $query->whereRaw('0=1');
+    }
 
     public static function getPages(): array
     {

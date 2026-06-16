@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use InvalidArgumentException;
 
-class PerformanceReview extends Model
+final class PerformanceReview extends Model
 {
     protected $fillable = [
         'employee_id',
@@ -26,8 +29,24 @@ class PerformanceReview extends Model
     protected $casts = [
         'review_date' => 'date',
         'approved_at' => 'datetime',
-        'score'       => 'decimal:2',
+        'score' => 'decimal:2',
     ];
+
+    /**
+     * Tentukan kategori berdasarkan skor.
+     *
+     * >= 80 → High
+     * >= 60 → Med
+     *  < 60 → Low
+     */
+    public static function resolveCategory(float $score): string
+    {
+        return match (true) {
+            $score >= 80 => 'High',
+            $score >= 60 => 'Med',
+            default => 'Low',
+        };
+    }
 
     // ─── RELATIONS ────────────────────────────────────────────────
 
@@ -87,48 +106,32 @@ class PerformanceReview extends Model
             return null;
         }
 
-        $totalWeight  = $details->sum(fn ($d) => $d->criteria->weight);
-        $weightedSum  = $details->sum(fn ($d) => $d->score * $d->criteria->weight);
+        $totalWeight = $details->sum(fn ($d) => $d->criteria->weight);
+        $weightedSum = $details->sum(fn ($d) => $d->score * $d->criteria->weight);
 
-        if ($totalWeight == 0) {
+        if ($totalWeight === 0) {
             return null;
         }
 
         return round($weightedSum / $totalWeight, 2);
     }
 
-    /**
-     * Tentukan kategori berdasarkan skor.
-     *
-     * >= 80 → High
-     * >= 60 → Med
-     *  < 60 → Low
-     */
-    public static function resolveCategory(float $score): string
-    {
-        return match (true) {
-            $score >= 80 => 'High',
-            $score >= 60 => 'Med',
-            default      => 'Low',
-        };
-    }
-
     // ─── HOOKS ───────────────────────────────────────────────────
 
     protected static function booted(): void
     {
-        static::creating(function (self $model) {
+        self::creating(function (self $model) {
             // Isi period_year dan period_quarter otomatis dari field period
             // agar tidak perlu input manual. Format period: '2025-Q1'
             [$year, $quarter] = self::parsePeriod($model->period);
-            $model->period_year    = $year;
+            $model->period_year = $year;
             $model->period_quarter = $quarter;
         });
 
-        static::updating(function (self $model) {
+        self::updating(function (self $model) {
             if ($model->isDirty('period')) {
                 [$year, $quarter] = self::parsePeriod($model->period);
-                $model->period_year    = $year;
+                $model->period_year = $year;
                 $model->period_quarter = $quarter;
             }
         });
@@ -145,7 +148,7 @@ class PerformanceReview extends Model
         preg_match('/^(\d{4})-Q([1-4])$/', $period, $matches);
 
         if (count($matches) !== 3) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 "Format period tidak valid: '{$period}'. Gunakan format YYYY-QN (contoh: 2025-Q1)."
             );
         }

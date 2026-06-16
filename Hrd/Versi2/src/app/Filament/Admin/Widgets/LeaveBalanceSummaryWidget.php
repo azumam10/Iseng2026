@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Employee;
@@ -10,15 +12,17 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
-class LeaveBalanceSummaryWidget extends BaseWidget
+final class LeaveBalanceSummaryWidget extends BaseWidget
 {
-    protected static ?string $heading   = 'Rekap Sisa Kuota Cuti Karyawan';
-    protected static ?int    $sort      = 3;
+    protected static ?string $heading = 'Rekap Sisa Kuota Cuti Karyawan';
+
+    protected static ?int $sort = 3;
+
     protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
-        $year       = Carbon::now()->year;
+        $year = Carbon::now()->year;
         $leaveTypes = LeaveType::whereNotNull('quota_per_year')->get();
 
         $columns = [
@@ -43,25 +47,32 @@ class LeaveBalanceSummaryWidget extends BaseWidget
         ];
 
         foreach ($leaveTypes as $lt) {
-            $ltId  = $lt->id;
+            $ltId = $lt->id;
             $quota = $lt->quota_per_year;
 
             $columns[] = TextColumn::make("balance_{$ltId}")
                 ->label("{$lt->name} ({$quota}h)")
                 ->getStateUsing(function (Employee $record) use ($ltId, $year, $quota): string {
                     $remaining = $record->getRemainingLeaveQuota($ltId, $year) ?? $quota;
+
                     return "{$remaining} sisa";
                 })
                 ->badge()
                 ->color(function (Employee $record) use ($ltId, $year, $quota): string {
                     $remaining = $record->getRemainingLeaveQuota($ltId, $year) ?? $quota;
-                    if ($remaining <= 0) return 'danger';
-                    if ($remaining <= 3) return 'warning';
+                    if ($remaining <= 0) {
+                        return 'danger';
+                    }
+                    if ($remaining <= 3) {
+                        return 'warning';
+                    }
+
                     return 'success';
                 })
                 ->tooltip(function (Employee $record) use ($ltId, $year, $quota): string {
                     $remaining = $record->getRemainingLeaveQuota($ltId, $year) ?? $quota;
-                    $used      = $quota - $remaining;
+                    $used = $quota - $remaining;
+
                     return "Dipakai: {$used} | Sisa: {$remaining} | Kuota: {$quota}";
                 });
         }

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\PerformanceReviews\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
-class PerformanceReviewInfolist
+final class PerformanceReviewInfolist
 {
     public static function configure(Schema $schema): Schema
     {

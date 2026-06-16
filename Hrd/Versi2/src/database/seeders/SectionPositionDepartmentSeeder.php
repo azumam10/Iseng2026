@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Department;
 use App\Models\Position;
 use App\Models\Section;
+use Illuminate\Database\Seeder;
 
-class SectionPositionDepartmentSeeder extends Seeder
+final class SectionPositionDepartmentSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -69,7 +71,7 @@ class SectionPositionDepartmentSeeder extends Seeder
         foreach ($sectionNames as $sectionName) {
             Section::firstOrCreate(
                 [
-                    'name'          => $sectionName,
+                    'name' => $sectionName,
                     'department_id' => $department->id,   // semua milik Produksi
                 ]
             );

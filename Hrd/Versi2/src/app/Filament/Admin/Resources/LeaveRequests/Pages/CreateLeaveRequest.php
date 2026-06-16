@@ -1,22 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\LeaveRequests\Pages;
 
 use App\Filament\Admin\Resources\LeaveRequests\LeaveRequestResource;
-use App\Models\Employee;
 use Filament\Resources\Pages\CreateRecord;
 
-class CreateLeaveRequest extends CreateRecord
+final class CreateLeaveRequest extends CreateRecord
 {
     protected static string $resource = LeaveRequestResource::class;
 
-  protected function mutateFormDataBeforeCreate(array $data): array
-{
-    $data['requested_by_user_id'] = auth()->id();
-    $data['status'] = 'pending';
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['requested_by_user_id'] = auth()->id();
+        $data['status'] = 'pending';
 
-    return $data;
-}
+        return $data;
+    }
 
     // Blokir karyawan membuat request
     protected function authorizeAccess(): void

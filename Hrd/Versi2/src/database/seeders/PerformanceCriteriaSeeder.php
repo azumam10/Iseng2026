@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Models\PerformanceCriteria;
 use Illuminate\Database\Seeder;
 
-class PerformanceCriteriaSeeder extends Seeder
+final class PerformanceCriteriaSeeder extends Seeder
 {
     /**
      * Contoh kriteria dengan total bobot = 100.
@@ -15,34 +17,34 @@ class PerformanceCriteriaSeeder extends Seeder
     {
         $criteria = [
             [
-                'name'        => 'Kedisiplinan',
-                'weight'      => 25.00,
+                'name' => 'Kedisiplinan',
+                'weight' => 25.00,
                 'description' => 'Ketepatan waktu, kehadiran, dan kepatuhan terhadap aturan perusahaan.',
-                'is_active'   => true,
+                'is_active' => true,
             ],
             [
-                'name'        => 'Kualitas Kerja',
-                'weight'      => 30.00,
+                'name' => 'Kualitas Kerja',
+                'weight' => 30.00,
                 'description' => 'Akurasi, ketelitian, dan standar hasil pekerjaan.',
-                'is_active'   => true,
+                'is_active' => true,
             ],
             [
-                'name'        => 'Kerjasama Tim',
-                'weight'      => 20.00,
+                'name' => 'Kerjasama Tim',
+                'weight' => 20.00,
                 'description' => 'Kemampuan bekerja dalam tim dan komunikasi antar rekan.',
-                'is_active'   => true,
+                'is_active' => true,
             ],
             [
-                'name'        => 'Inisiatif',
-                'weight'      => 15.00,
+                'name' => 'Inisiatif',
+                'weight' => 15.00,
                 'description' => 'Kemampuan mengambil inisiatif dan memberikan ide konstruktif.',
-                'is_active'   => true,
+                'is_active' => true,
             ],
             [
-                'name'        => 'Tanggung Jawab',
-                'weight'      => 10.00,
+                'name' => 'Tanggung Jawab',
+                'weight' => 10.00,
                 'description' => 'Kesediaan bertanggung jawab atas tugas dan keputusan.',
-                'is_active'   => true,
+                'is_active' => true,
             ],
         ];
 

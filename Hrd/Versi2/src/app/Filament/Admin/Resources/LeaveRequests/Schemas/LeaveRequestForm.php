@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\LeaveRequests\Schemas;
 
 use App\Models\Employee;
@@ -15,7 +17,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 
-class LeaveRequestForm
+final class LeaveRequestForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -32,6 +34,7 @@ class LeaveRequestForm
                             if ($user->hasRole('kepala_bagian') && $user->employee) {
                                 return $query->where('supervisor_id', $user->employee->id);
                             }
+
                             return $query;
                         }
                     )
@@ -52,28 +55,28 @@ class LeaveRequestForm
                 Placeholder::make('sisa_kuota')
                     ->label('Sisa Kuota Cuti (Tahun Ini)')
                     ->content(function (Get $get): string {
-                        $employeeId  = $get('employee_id');
+                        $employeeId = $get('employee_id');
                         $leaveTypeId = $get('leave_type_id');
 
-                        if (!$employeeId || !$leaveTypeId) {
+                        if (! $employeeId || ! $leaveTypeId) {
                             return '— Pilih karyawan dan jenis cuti —';
                         }
 
-                        $employee  = Employee::find($employeeId);
+                        $employee = Employee::find($employeeId);
                         $leaveType = LeaveType::find($leaveTypeId);
 
-                        if (!$leaveType?->quota_per_year) {
+                        if (! $leaveType?->quota_per_year) {
                             return 'Tidak ada batas kuota';
                         }
 
                         $remaining = $employee?->getRemainingLeaveQuota($leaveTypeId);
-                        $quota     = $leaveType->quota_per_year;
-                        $used      = $quota - $remaining;
+                        $quota = $leaveType->quota_per_year;
+                        $used = $quota - $remaining;
 
-                        $color = match(true) {
-                            $remaining <= 0         => '🔴',
-                            $remaining <= 3         => '🟡',
-                            default                 => '🟢',
+                        $color = match (true) {
+                            $remaining <= 0 => '🔴',
+                            $remaining <= 3 => '🟡',
+                            default => '🟢',
                         };
 
                         return "{$color} Sisa: {$remaining} hari kerja (Dipakai: {$used} / Kuota: {$quota} hari)";
@@ -95,12 +98,14 @@ class LeaveRequestForm
                     ->label('Hari Kerja Diajukan')
                     ->content(function (Get $get): string {
                         $start = $get('start_date');
-                        $end   = $get('end_date');
+                        $end = $get('end_date');
 
-                        if (!$start || !$end) return '—';
+                        if (! $start || ! $end) {
+                            return '—';
+                        }
 
                         $period = CarbonPeriod::create($start, $end);
-                        $days   = $period->filter('isWeekday')->count();
+                        $days = $period->filter('isWeekday')->count();
 
                         return "{$days} hari kerja (Sabtu & Minggu tidak dihitung)";
                     }),

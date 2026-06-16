@@ -34,7 +34,7 @@ final class User extends Authenticatable
     public function getFilamentAvatarUrl(): string
     {
         if ($this->avatar_url) {
-            return asset('storage/' . $this->avatar_url);
+            return asset('storage/'.$this->avatar_url);
         }
 
         $hash = md5(mb_strtolower(mb_trim($this->email)));
@@ -94,7 +94,7 @@ final class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
+            'password' => 'hashed',
         ];
     }
 }

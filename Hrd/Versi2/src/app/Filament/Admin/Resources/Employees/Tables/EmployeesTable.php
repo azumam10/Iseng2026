@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\Employees\Tables;
 
 use Filament\Actions\BulkActionGroup;
@@ -10,7 +12,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
-class EmployeesTable
+final class EmployeesTable
 {
     public static function configure(Table $table): Table
     {
@@ -45,17 +47,16 @@ class EmployeesTable
                     ->placeholder('-')
                     ->toggleable(),
 
-
                 // ─── Status & Gender ──────────────────────────────────────────
                 TextColumn::make('employment_status')
                     ->label('Status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'PKWTT'    => 'success',
-                        'PKWT'     => 'info',
-                        'HARIAN'   => 'warning',
+                        'PKWTT' => 'success',
+                        'PKWT' => 'info',
+                        'HARIAN' => 'warning',
                         'DIREKTUR' => 'danger',
-                        default    => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('gender')
@@ -85,11 +86,11 @@ class EmployeesTable
                     ->label('Generasi')
                     ->badge()
                     ->color(fn (?string $state): string => match ($state) {
-                        'Gen Z'        => 'info',
-                        'Milenial'     => 'success',
-                        'Gen X'        => 'warning',
+                        'Gen Z' => 'info',
+                        'Milenial' => 'success',
+                        'Gen X' => 'warning',
                         'Baby Boomers' => 'danger',
-                        default        => 'gray',
+                        default => 'gray',
                     })
                     ->toggleable(),
 
@@ -123,14 +124,14 @@ class EmployeesTable
                     ->badge()
                     ->color(fn (?string $state): string => match ($state) {
                         'High' => 'success',
-                        'Med'  => 'warning',
-                        'Low'  => 'danger',
+                        'Med' => 'warning',
+                        'Low' => 'danger',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'High' => '⭐ High',
-                        'Med'  => '📊 Med',
-                        'Low'  => '⚠️ Low',
+                        'Med' => '📊 Med',
+                        'Low' => '⚠️ Low',
                         default => '-',
                     })
                     ->placeholder('-')
@@ -154,9 +155,9 @@ class EmployeesTable
                 SelectFilter::make('employment_status')
                     ->label('Status Kepegawaian')
                     ->options([
-                        'PKWTT'    => 'PKWTT (Tetap)',
-                        'PKWT'     => 'PKWT (Kontrak)',
-                        'HARIAN'   => 'Harian',
+                        'PKWTT' => 'PKWTT (Tetap)',
+                        'PKWT' => 'PKWT (Kontrak)',
+                        'HARIAN' => 'Harian',
                         'DIREKTUR' => 'Direktur',
                     ]),
 
@@ -177,16 +178,16 @@ class EmployeesTable
                     ->label('Kategori Performa')
                     ->options([
                         'High' => '⭐ High Performer',
-                        'Med'  => '📊 Medium Performer',
-                        'Low'  => '⚠️ Low Performer',
+                        'Med' => '📊 Medium Performer',
+                        'Low' => '⚠️ Low Performer',
                     ]),
 
                 SelectFilter::make('generation')
                     ->label('Generasi')
                     ->options([
-                        'Gen Z'        => 'Gen Z',
-                        'Milenial'     => 'Milenial',
-                        'Gen X'        => 'Gen X',
+                        'Gen Z' => 'Gen Z',
+                        'Milenial' => 'Milenial',
+                        'Gen X' => 'Gen X',
                         'Baby Boomers' => 'Baby Boomers',
                     ]),
             ])

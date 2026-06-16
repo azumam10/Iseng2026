@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\LeaveRequests\Pages;
 
 use App\Filament\Admin\Resources\LeaveRequests\LeaveRequestResource;
@@ -7,7 +9,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 
-class EditLeaveRequest extends EditRecord
+final class EditLeaveRequest extends EditRecord
 {
     protected static string $resource = LeaveRequestResource::class;
 
